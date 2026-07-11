@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600&display=swap');
+
+:root{
+  --black:#0a0d0a;
+  --deep:#0f1a12;
+  --green-1:#1f5c3f;   /* DK */
+  --green-2:#2f7a4f;   /* FK */
+  --green-3:#43a05e;   /* YK */
+  --neon:#7CFF6B;
+  --bone:#eef2ea;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  background:var(--black);
+  font-family:'Space Grotesk',sans-serif;
+  color:var(--bone);
+}
+
+/* ---------- BANNER ---------- */
+.banner{
+  position:sticky;
+  top:0;
+  z-index:80;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 32px;
+  background:var(--black);
+  border-bottom:1px solid rgba(124,255,107,0.15);
+}
+
+.banner .logo{
+  font-family:'Archivo Black',sans-serif;
+  font-size:1.1rem;
+  letter-spacing:0.01em;
+  color:var(--bone);
+}
+.banner .logo span{ color:var(--neon); }
+
+.banner-buttons{ display:flex; gap:12px; }
+
+.chip-btn{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:0.8rem;
+  font-weight:500;
+  letter-spacing:0.02em;
+  padding:10px 20px;
+  border-radius:999px;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.chip-btn.primary{ background:var(--neon); color:var(--black); }
+.chip-btn.primary:hover{ background:var(--bone); }
+.chip-btn.ghost{ background:transparent; color:var(--bone); border-color:rgba(238,242,234,0.35); }
+.chip-btn.ghost:hover{ border-color:var(--neon); color:var(--neon); }
+
+/* ---------- HERO: FOLDER TABS ---------- */
+.hero{
+  position:relative;
+  padding:80px 5vw 60px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(124,255,107,0.06), transparent 55%),
+    var(--black);
+  overflow:hidden;
+}
+
+.folder-stack{
+  position:relative;
+  height:38vw;
+  max-height:420px;
+  min-height:260px;
+  width:100%;
+  display:flex;
+}
+
+.tab{
+  position:relative;
+  flex:1;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding:24px 3vw;
+  cursor:pointer;
+  text-decoration:none;
+  color:var(--bone);
+  transition:transform 0.25s ease, filter 0.25s ease;
+  border-top-left-radius:18px;
+  border-top-right-radius:18px;
+  font-family:'Archivo Black',sans-serif;
+  font-size:clamp(1rem, 2vw, 1.4rem);
+  letter-spacing:0.04em;
+}
+
+.tab:hover{ transform:translateY(-10px); filter:brightness(1.15); }
+
+.tab-dk{ background:var(--green-1); z-index:3; margin-right:-2.5vw; }
+.tab-fk{ background:var(--green-2); z-index:2; margin-right:-2.5vw; padding-left:6vw; }
+.tab-yk{ background:var(--green-3); z-index:1; padding-left:9vw; }
+
+.tab-label{
+  position:relative;
+  z-index:5;
+}
+
+.tab-caption{
+  position:absolute;
+  bottom:24px;
+  left:3vw;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:400;
+  font-size:0.75rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  opacity:0.7;
+}
+
+.hero-note{
+  margin-top:28px;
+  font-size:0.8rem;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  color:rgba(238,242,234,0.45);
+}
+
+/* ---------- IMAGE SECTIONS ---------- */
+.sections-row{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  border-top:1px solid rgba(124,255,107,0.1);
+}
+
+.section{
+  position:relative;
+  height:70vh;
+  min-height:420px;
+  width:100%;
+  display:flex;
+  align-items:flex-end;
+  overflow:hidden;
+  border-top:1px solid rgba(124,255,107,0.1);
+
+  /* fallback pattern shows if the image below is missing/still a placeholder name */
+  background-image:
+    repeating-linear-gradient(45deg, rgba(124,255,107,0.05) 0 2px, transparent 2px 14px),
+    linear-gradient(160deg, var(--deep), var(--black));
+  background-size:cover;
+  background-position:center;
+}
+
+.section:first-child{ border-top:none; }
+
+/* Swap the filename below for each section's real image once you've uploaded it to /images */
+#section-1{ background-image:url("images/section-1.jpg"); }
+#section-2{ background-image:url("images/section-2.jpg"); }
+#section-3{ background-image:url("images/section-3.jpg"); }
+
+.section::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.05) 45%);
+}
+
+@media (max-width:640px){
+  .banner{padding:0 16px;}
+  .chip-btn{padding:8px 14px;font-size:0.72rem;}
+  .hero{padding:48px 5vw 40px;}
+  .folder-stack{flex-direction:column; height:auto;}
+  .tab{
+    border-radius:14px;
+    margin:0 0 12px 0 !important;
+    padding:20px 20px !important;
+    min-height:90px;
+  }
+  .section{height:45vh; min-height:280px;}
+}
