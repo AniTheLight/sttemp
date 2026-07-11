@@ -4,8 +4,8 @@
   --black:#0a0d0a;
   --deep:#0f1a12;
   --green-1:#1f5c3f;   /* DK */
-  --green-2:#4b349a;   /* FK */
-  --green-3:#c32828;   /* YK */
+  --green-2:#2f7a4f;   /* FK */
+  --green-3:#43a05e;   /* YK */
   --neon:#7CFF6B;
   --bone:#eef2ea;
 }
@@ -161,6 +161,118 @@ html,body{
   inset:0;
   background:linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.02) 45%);
   pointer-events:none;
+}
+
+/* ---------- SECTION 01: text + photo ---------- */
+.section-01{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:center;
+  gap:4vw;
+  padding:64px 5vw;
+  background:linear-gradient(160deg, var(--black) 0%, var(--black) 40%, #2b4a34 78%, #a9c9ab 100%);
+  min-height:520px;
+}
+
+.section-01::after{ display:none; }
+
+.section-copy{
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+  justify-content:center;
+  height:100%;
+}
+
+.section-heading{
+  font-family:'Archivo Black',sans-serif;
+  font-style:italic;
+  font-size:clamp(1.8rem, 4vw, 3rem);
+  line-height:1.05;
+  max-width:520px;
+}
+
+.section-sub{
+  font-family:'Space Grotesk',monospace;
+  font-size:0.75rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--bone);
+  opacity:0.8;
+}
+
+.section-body{
+  font-family:'Space Grotesk',monospace;
+  font-size:0.78rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  line-height:1.7;
+  max-width:420px;
+  color:var(--bone);
+}
+
+.section-body .strike{
+  text-decoration:line-through;
+  opacity:0.55;
+}
+
+.section-footnote{
+  margin-top:auto;
+  padding-top:32px;
+  font-family:'Space Grotesk',monospace;
+  font-size:0.68rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:rgba(238,242,234,0.6);
+  line-height:1.6;
+}
+
+.section-photo{
+  position:relative;
+}
+
+.section-photo::before{
+  content:"";
+  position:absolute;
+  top:-6%;
+  right:-6%;
+  width:88%;
+  height:100%;
+  background:rgba(76,120,90,0.55);
+  z-index:0;
+}
+
+.section-photo img{
+  position:relative;
+  z-index:1;
+  width:92%;
+  margin-left:8%;
+}
+
+.badge{
+  position:absolute;
+  top:-8%;
+  right:-2%;
+  width:76px;
+  height:76px;
+  border-radius:50%;
+  overflow:hidden;
+  z-index:2;
+  box-shadow:0 0 0 4px var(--black);
+}
+
+.badge img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+@media (max-width:900px){
+  .section-01{
+    grid-template-columns:1fr;
+    padding:48px 6vw;
+  }
+  .section-photo{ order:-1; margin-bottom:32px; }
 }
 
 @media (max-width:640px){
