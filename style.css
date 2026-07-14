@@ -145,7 +145,6 @@ html,body{
   width:100%;
   display:block;
   line-height:0;
-  border-top:1px solid rgba(124,255,107,0.1);
 
   /* fallback pattern shows through while an image is missing/broken */
   background-image:
