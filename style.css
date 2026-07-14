@@ -8,6 +8,9 @@
   --green-3:#c32828;   /* YK */
   --neon:#7CFF6B;
   --bone:#eef2ea;
+  --purple-1:;#a25da3 /*MQ*/
+  --purple-2:#4e2171; /*SI*/
+  --purple:#704471;
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -54,6 +57,7 @@ html,body{
   transition:all 0.2s ease;
 }
 .chip-btn.primary{ background:var(--neon); color:var(--black); }
+.chip-btn.sister{background:var(--purple); color:var(--black);}
 .chip-btn.primary:hover{ background:var(--bone); }
 .chip-btn.ghost{ background:transparent; color:var(--bone); border-color:rgba(238,242,234,0.35); }
 .chip-btn.ghost:hover{ border-color:var(--neon); color:var(--neon); }
@@ -100,6 +104,8 @@ html,body{
 .tab-dk{ background:var(--green-1); z-index:3; margin-right:-2.5vw; }
 .tab-fk{ background:var(--green-2); z-index:2; margin-right:-2.5vw; padding-left:6vw; }
 .tab-yk{ background:var(--green-3); z-index:1; margin-right:-2.5vw; padding-left:9vw; }
+.tab-mq{ background:var(--purple-1); z-index:1; margin-right:-2.5vw; }
+.tab-sq{ background:var(--purple-2); z-index:1; margin-right:-2.5vw; padding-left:6vw;}
 
 .tab-label{
   position:relative;
