@@ -99,7 +99,7 @@ html,body{
 
 .tab-dk{ background:var(--green-1); z-index:3; margin-right:-2.5vw; }
 .tab-fk{ background:var(--green-2); z-index:2; margin-right:-2.5vw; padding-left:6vw; }
-.tab-yk{ background:var(--green-3); z-index:1; padding-left:10vw; }
+.tab-yk{ background:var(--green-3); z-index:1; margin-right:-2.5vw; padding-left:9vw; }
 
 .tab-label{
   position:relative;
