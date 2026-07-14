@@ -154,10 +154,22 @@ html,body{
 }
 
 .who-is-it-btn{
+  font-family:'Space Grotesk',sans-serif;
+  color:white;
   position:absolute;
   top:150px;
   right:150px;
   z-index:3;
+}
+
+.someones-here{
+  color:white;
+  font-family:'Space Grotesk',sans-serif;
+  position:absolute;
+  top:150px;
+  right:150px;
+  z-index:3;
+  text-transform:uppercase;
 }
 
 .section:first-child{ border-top:none; }
