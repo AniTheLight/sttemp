@@ -153,6 +153,13 @@ html,body{
     linear-gradient(160deg, var(--deep), var(--black));
 }
 
+.who-is-it-btn{
+  position:absolute;
+  top:24px;
+  right:24px;
+  z-index:3;
+}
+
 .section:first-child{ border-top:none; }
 
 .section img{
