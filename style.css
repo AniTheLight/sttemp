@@ -144,11 +144,6 @@ html,body{
   width:100%;
   display:block;
   line-height:0;
-
-  /* fallback pattern shows through while an image is missing/broken */
-  background-image:
-    repeating-linear-gradient(45deg, rgba(124,255,107,0.05) 0 2px, transparent 2px 14px),
-    linear-gradient(160deg, var(--deep), var(--black));
 }
 
 .who-is-it-btn{
