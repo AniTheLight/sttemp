@@ -34,6 +34,18 @@ html,body{
   background:var(--black);
   border-bottom:1px solid rgba(124,255,107,0.15);
 }
+.sistersbanner{
+  position:sticky;
+  top:0;
+  z-index:80;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 32px;
+  background: var(--light-pink, #f0e1f1);
+  border-bottom:1px solid rgba(124,255,107,0.15);
+}
 
 .banner .logo{
   font-family:'Archivo Black',sans-serif;
