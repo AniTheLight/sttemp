@@ -177,7 +177,6 @@ html,body{
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.02) 45%);
   pointer-events:none;
 }
 
@@ -188,7 +187,6 @@ html,body{
   align-items:center;
   gap:4vw;
   padding:64px 5vw;
-  background:linear-gradient(160deg, var(--black) 0%, var(--black) 40%, #2b4a34 78%, #a9c9ab 100%);
   min-height:520px;
 }
 
