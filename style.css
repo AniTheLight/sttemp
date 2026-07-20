@@ -6,7 +6,7 @@
   --green-1:#1f5c3f;   /* DK */
   --green-2:#4b349a;   /* FK */
   --green-3:#c32828;   /* YK */
-  --neon:#7CFF6B;
+  --neon:#6a928d;
   --bone:#eef2ea;
   --purple-1:#a25da3; /*MQ*/
   --purple-2:#4e2171; /*SI*/
@@ -39,9 +39,21 @@ a {
   background:var(--black);
   border-bottom:1px solid rgba(124,255,107,0.15);
 }
+.sistersbanner{
+  position:sticky;
+  top:0;
+  z-index:80;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 32px;
+  background: var(#3f203d);
+  border-bottom:1px solid rgba(124,255,107,0.15);
+}
 
 .banner .logo{
-  font-family:'Archivo Black',sans-serif;
+  font-family:'Poppins',sans-serif;
   font-size:1.1rem;
   letter-spacing:0.01em;
   color:var(--bone);
@@ -72,8 +84,14 @@ a {
   position:relative;
   padding:80px 5vw 60px;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(124,255,107,0.06), transparent 55%),
     var(--black);
+  overflow:hidden;
+}
+.sisters-hero{
+  position:relative;
+  padding:80px 5vw 60px;
+  background:
+    var(#f0e1f1);
   overflow:hidden;
 }
 
@@ -192,7 +210,6 @@ a {
   align-items:center;
   gap:4vw;
   padding:64px 5vw;
-  background:linear-gradient(160deg, var(--black) 0%, var(--black) 40%, #2b4a34 78%, #a9c9ab 100%);
   min-height:520px;
 }
 
@@ -233,10 +250,6 @@ a {
   color:var(--bone);
 }
 
-.section-body .strike{
-  text-decoration:line-through;
-  opacity:0.55;
-}
 
 .section-footnote{
   margin-top:auto;
@@ -245,7 +258,6 @@ a {
   font-size:0.68rem;
   letter-spacing:0.06em;
   text-transform:uppercase;
-  color:rgba(238,242,234,0.6);
   line-height:1.6;
 }
 
@@ -260,7 +272,6 @@ a {
   right:-6%;
   width:88%;
   height:100%;
-  background:rgba(76,120,90,0.55);
   z-index:0;
 }
 
