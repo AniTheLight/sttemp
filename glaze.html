@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Thank You Page</title>
+
+<!-- 1. Load the fonts the cards use -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+  /* page-level layout */
+  body{
+    margin: 0;
+    min-height: 100vh;
+    padding: 60px 24px;
+    background: #2f2f2f;
+    font-family: 'Kalam', cursive;
+    color: #f5f0e6;
+  }
+  #my-cards{
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    display: grid;
+    gap: 28px;
+  }
+  .person-block{
+    display: grid;
+    gap: 16px;
+  }
+  .person-block .name-tag{
+    justify-self: center;
+  }
+  .person-cards{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .empty-note{
+    margin: 0;
+    opacity: 0.85;
+  }
+</style>
+</head>
+<body>
+
+  <div id="my-cards"></div>
+
+  <!-- 3. Load the component script -->
+  <script src="pinboard-cards.js"></script>
+
+  <script>
+    const container = document.getElementById("my-cards");
+
+    function titleCase(value) {
+      return String(value)
+        .split(/[_\-\s]+/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    }
+
+    function renderPerson(personEntry) {
+      const personBlock = document.createElement("section");
+      personBlock.className = "person-block";
+
+      const nameCard = PinboardCards.createNameCard({
+        name: titleCase(personEntry.person),
+        paper: "#dfe8c9",
+        pin: "#e2b64a"
+      });
+      personBlock.appendChild(nameCard);
+
+      const cardsWrap = document.createElement("div");
+      cardsWrap.className = "person-cards";
+
+      const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
+      const messages = Array.isArray(personEntry.messages) ? personEntry.messages : [];
+
+      assets.forEach((asset) => {
+        const card = PinboardCards.createCustomNoteCard({
+          backgroundSrc: asset.backgroundSrc,
+          aspectRatio: asset.aspectRatio || "1 / 1",
+          padding: asset.padding || "10% 10% 8%",
+          width: 280
+        });
+        cardsWrap.appendChild(card);
+      });
+
+      messages.forEach((messageItem) => {
+        const messageText = typeof messageItem === "string"
+          ? messageItem
+          : String(messageItem && messageItem.text ? messageItem.text : "");
+        if (!messageText) return;
+
+        const sender = typeof messageItem === "object" && messageItem
+          ? String(messageItem.from || "").trim()
+          : "";
+        const composedMessage = sender
+          ? `${messageText}\n~ ${sender}`
+          : messageText;
+
+        const messageCard = PinboardCards.createMessageCard({
+          message: composedMessage,
+          pin: "#b5482f"
+        });
+        cardsWrap.appendChild(messageCard);
+      });
+
+      if (!assets.length && !messages.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty-note";
+        empty.textContent = "No submissions yet.";
+        cardsWrap.appendChild(empty);
+      }
+
+      personBlock.appendChild(cardsWrap);
+      container.appendChild(personBlock);
+    }
+
+    async function loadCards() {
+      container.textContent = "Loading submissions...";
+      try {
+          const response = await fetch("/api/glaze-submissions?group=boys");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+
+        container.innerHTML = "";
+        const people = Array.isArray(payload.people) ? payload.people : [];
+
+        people.forEach(renderPerson);
+
+        if (!people.length) {
+          container.textContent = "No people found in submissions folder.";
+        }
+      } catch (error) {
+        container.innerHTML = "";
+        const fallback = PinboardCards.createMessageCard({
+          message: "Could not load submissions. Start the local server and retry.",
+          pin: "#b5482f"
+        });
+        container.appendChild(fallback);
+      }
+    }
+
+    loadCards();
+  </script>
+
+</body>
+</html>

@@ -21,6 +21,11 @@ html,body{
   color:var(--bone);
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* ---------- BANNER ---------- */
 .banner{
   position:sticky;
@@ -57,7 +62,7 @@ html,body{
   transition:all 0.2s ease;
 }
 .chip-btn.primary{ background:var(--neon); color:var(--black); }
-.chip-btn.sister{background:var(--purple); color:var(--black);}
+.chip-btn.sister{background:var(--purple); color:var(--white);}
 .chip-btn.primary:hover{ background:var(--bone); }
 .chip-btn.ghost{ background:transparent; color:var(--bone); border-color:rgba(238,242,234,0.35); }
 .chip-btn.ghost:hover{ border-color:var(--neon); color:var(--neon); }
@@ -177,7 +182,6 @@ html,body{
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.02) 45%);
   pointer-events:none;
 }
 
@@ -304,4 +308,64 @@ html,body{
     padding:20px 20px !important;
     min-height:90px;
   }
+}
+
+.board {
+  padding-bottom: 50px;
+}
+
+.board-top{
+  min-height: 100vh;
+  padding: 80px 24px;
+  box-sizing: border-box;
+
+  /* static background — doesn't move or change with scroll */
+  background-image: url("images/glaze_top_bg.png");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+
+  color: white;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+
+#my-cards{
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 28px;
+  background-image: url("images/written_glaze/girlies/glaze_bg.png");
+  background-repeat: repeat-y;
+  padding: 40px 24px;
+}
+.person-block{
+  display: grid;
+  gap: 16px;
+}
+.person-cards{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+  margin: 10px;
+}
+.empty-note{
+  margin: 0;
+  opacity: 0.85;
+}
+
+.person-block .name-tag{
+  justify-self: center;
+}
+
+
+.chip-btn.sister-submit{
+  margin-top: 40px;
+  display: block;
+  justify-self: right;
+  background: var(--purple);
+  color: white;
+  margin-right: 24px;
 }

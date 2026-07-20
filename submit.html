@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submit Glaze Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121212;
+    --panel:#232323;
+    --ink:#f6efdf;
+    --accent:#b8ff74;
+    --muted:#c8c8c8;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:radial-gradient(circle at 10% 0%, #2a3d2c 0%, #151515 52%, #0f0f0f 100%);
+    color:var(--ink);
+    font-family:'Kalam', cursive;
+    display:grid;
+    place-items:center;
+    padding:24px;
+  }
+  .panel{
+    width:min(680px, 100%);
+    background:rgba(35,35,35,0.92);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:24px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);
+    display:grid;
+    gap:14px;
+  }
+  h1{
+    margin:0;
+    font-family:'Archivo Black', sans-serif;
+    font-size:clamp(1.4rem, 4.2vw, 2rem);
+  }
+  p{ margin:0; color:var(--muted); }
+  .field{ display:grid; gap:6px; }
+  label{ font-size:1rem; }
+  input, textarea{
+    width:100%;
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:10px;
+    background:#1a1a1a;
+    color:var(--ink);
+    font:inherit;
+    padding:10px 12px;
+  }
+  textarea{ min-height:100px; resize:vertical; }
+  input[type="file"]{ padding:8px; }
+  .actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  button, .link-btn{
+    border:none;
+    border-radius:999px;
+    padding:10px 18px;
+    font:600 0.95rem 'Archivo Black', sans-serif;
+    cursor:pointer;
+  }
+  button{
+    background:var(--accent);
+    color:#0f150f;
+  }
+  .link-btn{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid rgba(255,255,255,0.3);
+    text-decoration:none;
+  }
+  #status{
+    min-height:1.4em;
+    font-size:0.95rem;
+  }
+  #status.ok{ color:#98ff98; }
+  #status.err{ color:#ff9d9d; }
+</style>
+</head>
+<body>
+  <main class="panel">
+    <h1>Glaze Submission</h1>
+    <p>Submit an image, a message, or both. Image files are auto-numbered in each person folder.</p>
+
+    <form id="submission-form">
+      <div class="field">
+        <label for="person">To:</label>
+        <input id="person" name="person" type="text" placeholder="e.g. anica" required>
+      </div>
+
+      <div class="field">
+        <label for="from">From:</label>
+        <input id="from" name="from" type="text" placeholder="e.g. nour" required>
+      </div>
+
+      <div class="field">
+        <label for="message">Message (optional)</label>
+        <textarea id="message" name="message" placeholder="Write something kind..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="image">Handwritten Image (optional: PNG or SVG)</label>
+        <input id="image" name="image" type="file" accept=".png,.svg,image/png,image/svg+xml">
+      </div>
+
+      <div class="actions">
+        <button type="submit">Submit</button>
+        <a class="link-btn" href="glaze.html">View Board</a>
+      </div>
+    </form>
+
+    <p id="status"></p>
+  </main>
+
+  <script>
+    const form = document.getElementById('submission-form');
+    const statusNode = document.getElementById('status');
+
+    function setStatus(message, kind) {
+      statusNode.textContent = message;
+      statusNode.className = kind ? kind : '';
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read file.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const person = document.getElementById('person').value.trim();
+      const from = document.getElementById('from').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const file = document.getElementById('image').files[0] || null;
+
+      if (!person) {
+        setStatus('Person name is required.', 'err');
+        return;
+      }
+
+      if (!from) {
+        setStatus('Sender name is required.', 'err');
+        return;
+      }
+
+      if (!message && !file) {
+        setStatus('Add a message or an image before submitting.', 'err');
+        return;
+      }
+
+      setStatus('Submitting...', '');
+
+      try {
+        const payload = { person, from, message };
+
+        if (file) {
+          const isAllowed = file.type === 'image/png' || file.type === 'image/svg+xml' || /\.(png|svg)$/i.test(file.name);
+          if (!isAllowed) {
+            setStatus('Only PNG or SVG files are supported.', 'err');
+            return;
+          }
+          payload.imageDataUrl = await readFileAsDataUrl(file);
+        }
+
+        const response = await fetch('/api/glaze-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Submission failed.');
+        }
+
+        setStatus('Submitted successfully. Open View Board to see it.', 'ok');
+        form.reset();
+      } catch (error) {
+        setStatus(error.message || 'Submission failed.', 'err');
+      }
+    });
+  </script>
+</body>
+</html>
