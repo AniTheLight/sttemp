@@ -11,7 +11,7 @@
   <header class="sistersbanner">
     <div class="logo">stem<span>muslims</span></div>
     <div class="banner-buttons">
-      <a class="chip-btn sister" href="index.html">Return to Brodom</a>
+      <a href='index.html'><button class="chip-btn sister">Return to Brodom</button></a>
     </div>
   </header>
 
@@ -41,6 +41,112 @@
     <section class="section">
       <img src="images/lost-sisters.png" alt="">
     </section>
+  </div>
+
+  <div class="board">
+    <div class="board-top"></div>
+    <div id="my-cards"></div>
+
+    <!-- 3. Load the component script -->
+    <script src="pinboard-cards.js"></script>
+
+    <script>
+      const container = document.getElementById("my-cards");
+
+      function titleCase(value) {
+        return String(value)
+          .split(/[_\-\s]+/)
+          .filter(Boolean)
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+          .join(" ");
+      }
+
+      function renderPerson(personEntry) {
+        const personBlock = document.createElement("section");
+        personBlock.className = "person-block";
+
+        const nameCard = PinboardCards.createNameCard({
+          name: titleCase(personEntry.person),
+          paper: "#dfe8c9",
+          pin: "#e2b64a"
+        });
+        personBlock.appendChild(nameCard);
+
+        const cardsWrap = document.createElement("div");
+        cardsWrap.className = "person-cards";
+
+        const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
+        const messages = Array.isArray(personEntry.messages) ? personEntry.messages : [];
+
+        assets.forEach((asset) => {
+          const card = PinboardCards.createCustomNoteCard({
+            backgroundSrc: asset.backgroundSrc,
+            aspectRatio: asset.aspectRatio || "1 / 1",
+            padding: asset.padding || "10% 10% 8%",
+            width: 280
+          });
+          cardsWrap.appendChild(card);
+        });
+
+      messages.forEach((messageItem) => {
+        const messageText = typeof messageItem === "string"
+          ? messageItem
+          : String(messageItem && messageItem.text ? messageItem.text : "");
+        if (!messageText) return;
+
+        const sender = typeof messageItem === "object" && messageItem
+          ? String(messageItem.from || "").trim()
+          : "";
+        const composedMessage = sender
+          ? `${messageText}\n~ ${sender}`
+          : messageText;
+
+        const messageCard = PinboardCards.createMessageCard({
+          message: composedMessage,
+          pin: "#b5482f"
+        });
+        cardsWrap.appendChild(messageCard);
+      });
+
+        if (!assets.length && !messages.length) {
+          const empty = document.createElement("p");
+          empty.className = "empty-note";
+          empty.textContent = "No submissions yet.";
+          cardsWrap.appendChild(empty);
+        }
+
+        personBlock.appendChild(cardsWrap);
+        container.appendChild(personBlock);
+      }
+
+      async function loadCards() {
+        container.textContent = "Loading submissions...";
+        try {
+          const response = await fetch("/api/glaze-submissions?group=girlies");
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const payload = await response.json();
+
+          container.innerHTML = "";
+          const people = Array.isArray(payload.people) ? payload.people : [];
+
+          people.forEach(renderPerson);
+
+          if (!people.length) {
+            container.textContent = "No people found in submissions folder.";
+          }
+        } catch (error) {
+          container.innerHTML = "";
+          const fallback = PinboardCards.createMessageCard({
+            message: "Could not load submissions. Start the local server and retry.",
+            pin: "#b5482f"
+          });
+          container.appendChild(fallback);
+        }
+      }
+
+      loadCards();
+    </script>
+    <a href="submit.html"><button class="chip-btn sister-submit">Admit your undying love</button></a>
   </div>
 
 </body>
