@@ -43,7 +43,7 @@ html,body{
   align-items:center;
   justify-content:space-between;
   padding:0 32px;
-  background: var(--light-pink, #f0e1f1);
+  background: var(#3f203d);
   border-bottom:1px solid rgba(124,255,107,0.15);
 }
 
@@ -80,6 +80,13 @@ html,body{
   padding:80px 5vw 60px;
   background:
     var(--black);
+  overflow:hidden;
+}
+.sisters-hero{
+  position:relative;
+  padding:80px 5vw 60px;
+  background:
+    var(#f0e1f1);
   overflow:hidden;
 }
 
