@@ -6,7 +6,7 @@
   --green-1:#1f5c3f;   /* DK */
   --green-2:#4b349a;   /* FK */
   --green-3:#c32828;   /* YK */
-  --neon:#7CFF6B;
+  --neon:#6a928d;
   --bone:#eef2ea;
   --purple-1:#a25da3; /*MQ*/
   --purple-2:#4e2171; /*SI*/
@@ -53,7 +53,7 @@ a {
 }
 
 .banner .logo{
-  font-family:'Archivo Black',sans-serif;
+  font-family:'Poppins',sans-serif;
   font-size:1.1rem;
   letter-spacing:0.01em;
   color:var(--bone);
