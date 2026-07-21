@@ -7,48 +7,121 @@
 <!-- 1. Load the fonts the cards use -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
-
+<!-- <link rel="stylesheet" href="style.css"> -->
 <style>
   /* page-level layout */
+
+  :root{
+    --black:#121212;
+    --bone:#eef2ea;
+    --neon:#7cff6b;
+    --purple:#9b6bff;
+    --white:#ffffff;
+  }
+
   body{
     margin: 0;
     min-height: 100vh;
-    padding: 60px 24px;
+    padding: 0 24px 40px;
     background: #2f2f2f;
     font-family: 'Kalam', cursive;
     color: #f5f0e6;
   }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .banner{
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    margin: 0 -24px;
+    background: var(--black);
+    border-bottom: 1px solid rgba(124,255,107,0.15);
+  }
+  .banner .logo{
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.01em;
+    color: var(--bone);
+  }
+  .banner .logo span{ color: var(--neon); }
+  .banner-buttons{ display: flex; gap: 12px; }
+
+  .chip-btn{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chip-btn.primary{ background: var(--neon); color: var(--black); }
+  .chip-btn.primary:hover{ background: var(--bone); }
+  .chip-btn.ghost{ background: transparent; color: var(--bone); border-color: rgba(238,242,234,0.35); }
+  .chip-btn.ghost:hover{ border-color: var(--neon); color: var(--neon); }
+
   #my-cards{
     width: min(1100px, 100%);
-    margin: 0 auto;
+    margin: 28px auto 0;
     display: grid;
     gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   }
   .person-block{
     display: grid;
     gap: 16px;
-  }
-  .person-block .name-tag{
-    justify-self: center;
+    justify-items: center;
   }
   .person-cards{
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     align-items: flex-start;
+    justify-content: center;
   }
   .empty-note{
     margin: 0;
     opacity: 0.85;
   }
+
+  .section{
+    justify-self: center;
+  }
 </style>
 </head>
 <body>
 
+  <header class="banner">
+    <a href="index.html"><div class="logo">STEM<span>Muslims</span></div></a>
+    <div class="banner-buttons">
+      <a href="sisters.html" class="chip-btn ghost">Incognito</a>
+      <a href="submit.html" class="chip-btn primary">Glaze Submissions</a>
+    </div>
+  </header>
+
+    <section class="section">
+      <img src="images/comm-pliments.png" alt="">
+    </section>
+
   <div id="my-cards"></div>
 
   <!-- 3. Load the component script -->
-  <script src="pinboard-cards.js"></script>
+  <script src="ani-pinboard-card.js"></script>
 
   <script>
     const container = document.getElementById("my-cards");
@@ -61,16 +134,23 @@
         .join(" ");
     }
 
-    function renderPerson(personEntry) {
+    function getPaletteForPerson(personEntry, colorConfig) {
+      const peopleMap = colorConfig && colorConfig.people && typeof colorConfig.people === "object"
+        ? colorConfig.people
+        : {};
+      const defaultColors = Array.isArray(colorConfig && colorConfig.defaultColors)
+        ? colorConfig.defaultColors
+        : ["#e8543a", "#fdf1a8", "#ffe7ce"];
+
+      const key = String(personEntry && personEntry.person ? personEntry.person : "").trim().toLowerCase();
+      const fromMap = Array.isArray(peopleMap[key]) ? peopleMap[key] : null;
+
+      return fromMap && fromMap.length ? fromMap : defaultColors;
+    }
+
+    function renderPerson(personEntry, colorConfig) {
       const personBlock = document.createElement("section");
       personBlock.className = "person-block";
-
-      const nameCard = PinboardCards.createNameCard({
-        name: titleCase(personEntry.person),
-        paper: "#dfe8c9",
-        pin: "#e2b64a"
-      });
-      personBlock.appendChild(nameCard);
 
       const cardsWrap = document.createElement("div");
       cardsWrap.className = "person-cards";
@@ -78,42 +158,47 @@
       const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
       const messages = Array.isArray(personEntry.messages) ? personEntry.messages : [];
 
-      assets.forEach((asset) => {
-        const card = PinboardCards.createCustomNoteCard({
-          backgroundSrc: asset.backgroundSrc,
-          aspectRatio: asset.aspectRatio || "1 / 1",
-          padding: asset.padding || "10% 10% 8%",
-          width: 280
-        });
-        cardsWrap.appendChild(card);
+      const normalizedMessages = messages
+        .map((messageItem) => {
+          if (typeof messageItem === "string") {
+            const text = messageItem.trim();
+            if (!text) return null;
+            return { from: "anonymous", text };
+          }
+
+          if (messageItem && typeof messageItem === "object") {
+            const text = String(messageItem.text || "").trim();
+            if (!text) return null;
+            const from = String(messageItem.from || "anonymous").trim() || "anonymous";
+            return { from, text };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+
+      const normalizedImageEntries = assets
+        .map((asset, index) => {
+          if (!asset || !asset.backgroundSrc) return null;
+          return {
+            from: `image ${index + 1}`,
+            text: "",
+            imageSrc: String(asset.backgroundSrc)
+          };
+        })
+        .filter(Boolean);
+
+      const posterEntries = [...normalizedMessages, ...normalizedImageEntries];
+
+      const palette = getPaletteForPerson(personEntry, colorConfig);
+      const tearOffPoster = PinboardCards.createTearOffPoster({
+        receiverName: titleCase(personEntry.person),
+        messages: posterEntries,
+        paper: palette[0] || "#e8543a",
+        noteColor: palette[1] || "#fdf1a8",
+        width: 320
       });
-
-      messages.forEach((messageItem) => {
-        const messageText = typeof messageItem === "string"
-          ? messageItem
-          : String(messageItem && messageItem.text ? messageItem.text : "");
-        if (!messageText) return;
-
-        const sender = typeof messageItem === "object" && messageItem
-          ? String(messageItem.from || "").trim()
-          : "";
-        const composedMessage = sender
-          ? `${messageText}\n~ ${sender}`
-          : messageText;
-
-        const messageCard = PinboardCards.createMessageCard({
-          message: composedMessage,
-          pin: "#b5482f"
-        });
-        cardsWrap.appendChild(messageCard);
-      });
-
-      if (!assets.length && !messages.length) {
-        const empty = document.createElement("p");
-        empty.className = "empty-note";
-        empty.textContent = "No submissions yet.";
-        cardsWrap.appendChild(empty);
-      }
+      cardsWrap.appendChild(tearOffPoster);
 
       personBlock.appendChild(cardsWrap);
       container.appendChild(personBlock);
@@ -122,14 +207,18 @@
     async function loadCards() {
       container.textContent = "Loading submissions...";
       try {
-          const response = await fetch("/api/glaze-submissions?group=boys");
+        const [response, colorsResponse] = await Promise.all([
+          fetch("/api/glaze-submissions?group=boys"),
+          fetch("/api/glaze-colors?group=boys")
+        ]);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
+        const colorConfig = colorsResponse.ok ? await colorsResponse.json() : {};
 
         container.innerHTML = "";
         const people = Array.isArray(payload.people) ? payload.people : [];
 
-        people.forEach(renderPerson);
+        people.forEach((personEntry) => renderPerson(personEntry, colorConfig));
 
         if (!people.length) {
           container.textContent = "No people found in submissions folder.";

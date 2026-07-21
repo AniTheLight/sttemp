@@ -1,10 +1,20 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { URL } = require("url");
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const ROOT = process.cwd();
+const INCOGNITO_PASSWORD = process.env.INCOGNITO_PASSWORD || "changeme";
+const INCOGNITO_COOKIE_NAME = "incognito_auth";
+const INCOGNITO_COOKIE_VALUE = crypto.randomBytes(24).toString("hex");
+const INCOGNITO_COOKIE_MAX_AGE_SECONDS = 8 * 60 * 60;
+const PROTECTED_PAGE_PATHS = new Set([
+  "/sisters.html",
+  "/samiya.html",
+  "/madiha.html"
+]);
 const WRITTEN_GLAZE_ROOT = path.join(ROOT, "images", "written_glaze");
 const PEOPLE_ROOTS = {
   boys: path.join(WRITTEN_GLAZE_ROOT, "boys"),
@@ -30,6 +40,43 @@ function sendJson(res, statusCode, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(statusCode, { "Content-Type": MIME_TYPES[".json"] });
   res.end(body);
+}
+
+function sendJsonWithHeaders(res, statusCode, payload, headers) {
+  const body = JSON.stringify(payload);
+  res.writeHead(statusCode, {
+    "Content-Type": MIME_TYPES[".json"],
+    ...headers
+  });
+  res.end(body);
+}
+
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  String(cookieHeader || "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .forEach((pair) => {
+      const eqIndex = pair.indexOf("=");
+      if (eqIndex <= 0) return;
+      const key = pair.slice(0, eqIndex).trim();
+      const value = pair.slice(eqIndex + 1).trim();
+      if (!key) return;
+      cookies[key] = decodeURIComponent(value);
+    });
+  return cookies;
+}
+
+function isIncognitoAuthed(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  return cookies[INCOGNITO_COOKIE_NAME] === INCOGNITO_COOKIE_VALUE;
+}
+
+function isProtectedPath(pathname) {
+  if (PROTECTED_PAGE_PATHS.has(pathname)) return true;
+  if (pathname.startsWith("/images/written_glaze/girlies/")) return true;
+  return false;
 }
 
 function readRequestBody(req, maxBytes) {
@@ -349,6 +396,41 @@ function getSubmissionPeople(groupKey) {
   });
 }
 
+function getGroupColors(groupKey) {
+  const groupRoot = PEOPLE_ROOTS[groupKey];
+  if (!groupRoot) {
+    return {
+      defaultColors: ["#e8543a", "#fdf1a8", "#ffe7ce"],
+      people: {}
+    };
+  }
+
+  const colorsPath = path.join(groupRoot, "colours.json");
+  if (!fs.existsSync(colorsPath) || !fs.statSync(colorsPath).isFile()) {
+    return {
+      defaultColors: ["#e8543a", "#fdf1a8", "#ffe7ce"],
+      people: {}
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(colorsPath, "utf8"));
+    const defaultColors = Array.isArray(parsed.defaultColors) && parsed.defaultColors.length
+      ? parsed.defaultColors
+      : ["#e8543a", "#fdf1a8", "#ffe7ce"];
+    const people = parsed.people && typeof parsed.people === "object"
+      ? parsed.people
+      : {};
+
+    return { defaultColors, people };
+  } catch (error) {
+    return {
+      defaultColors: ["#e8543a", "#fdf1a8", "#ffe7ce"],
+      people: {}
+    };
+  }
+}
+
 function resolveStaticPath(urlPath) {
   const normalized = path.normalize(decodeURIComponent(urlPath)).replace(/^[/\\]+/, "");
   const absolutePath = path.resolve(ROOT, normalized);
@@ -366,6 +448,51 @@ function resolveStaticPath(urlPath) {
 
 const server = http.createServer((req, res) => {
   const reqUrl = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+
+  if (reqUrl.pathname === "/api/incognito-login" && req.method === "POST") {
+    readRequestBody(req, MAX_JSON_BODY_BYTES)
+      .then((rawBody) => {
+        let parsed;
+        try {
+          parsed = JSON.parse(rawBody || "{}");
+        } catch (error) {
+          sendJson(res, 400, { error: "Invalid JSON body." });
+          return;
+        }
+
+        const password = String(parsed.password || "");
+        if (password !== INCOGNITO_PASSWORD) {
+          sendJson(res, 401, { ok: false, error: "Incorrect password." });
+          return;
+        }
+
+        const cookie = [
+          `${INCOGNITO_COOKIE_NAME}=${encodeURIComponent(INCOGNITO_COOKIE_VALUE)}`,
+          "Path=/",
+          `Max-Age=${INCOGNITO_COOKIE_MAX_AGE_SECONDS}`,
+          "HttpOnly",
+          "SameSite=Lax"
+        ].join("; ");
+
+        sendJsonWithHeaders(res, 200, { ok: true }, {
+          "Set-Cookie": cookie
+        });
+      })
+      .catch((error) => {
+        sendJson(res, 500, {
+          error: "Failed to process login.",
+          detail: error.message
+        });
+      });
+    return;
+  }
+
+  if (reqUrl.pathname === "/api/incognito-logout" && req.method === "POST") {
+    sendJsonWithHeaders(res, 200, { ok: true }, {
+      "Set-Cookie": `${INCOGNITO_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`
+    });
+    return;
+  }
 
   if (reqUrl.pathname === "/api/glaze-submit" && req.method === "POST") {
     readRequestBody(req, MAX_JSON_BODY_BYTES)
@@ -441,6 +568,9 @@ const server = http.createServer((req, res) => {
   if (reqUrl.pathname === "/api/glaze-submissions") {
     try {
       const requestedGroup = resolveGroup(reqUrl.searchParams.get("group")) || "boys";
+      if (requestedGroup === "girlies" && !isIncognitoAuthed(req)) {
+        return sendJson(res, 403, { error: "Forbidden." });
+      }
       const people = getSubmissionPeople(requestedGroup);
       return sendJson(res, 200, {
         generatedAt: new Date().toISOString(),
@@ -455,8 +585,34 @@ const server = http.createServer((req, res) => {
     }
   }
 
+  if (reqUrl.pathname === "/api/glaze-colors") {
+    try {
+      const requestedGroup = resolveGroup(reqUrl.searchParams.get("group")) || "boys";
+      if (requestedGroup === "girlies" && !isIncognitoAuthed(req)) {
+        return sendJson(res, 403, { error: "Forbidden." });
+      }
+      const colors = getGroupColors(requestedGroup);
+      return sendJson(res, 200, {
+        group: requestedGroup,
+        defaultColors: colors.defaultColors,
+        people: colors.people
+      });
+    } catch (error) {
+      return sendJson(res, 500, {
+        error: "Failed to load colors config.",
+        detail: error.message
+      });
+    }
+  }
+
   let requestPath = reqUrl.pathname;
   if (requestPath === "/") requestPath = "/index.html";
+
+  if (isProtectedPath(requestPath) && !isIncognitoAuthed(req)) {
+    res.writeHead(302, { Location: "/incognito.html" });
+    res.end();
+    return;
+  }
 
   const resolved = resolveStaticPath(requestPath);
   if (!resolved) {

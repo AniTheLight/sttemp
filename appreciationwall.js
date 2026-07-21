@@ -32,9 +32,49 @@
 const AppreciationWall = (() => {
   let stylesInjected = false;
 
-  const NOTE_COLORS = ["#f2e08c", "#f5c6d4", "#b9d8ec", "#b7dcc2", "#f5f1e6"];
+  const NOTE_COLORS = ["#f2e08c", "#f5c6d4", "#b9d8ec"];
   const NOTE_FONTS = ["'Caveat', cursive", "'Kalam', cursive", "'Shadows Into Light', cursive"];
   const PAPER_STYLES = ["sticky", "torn", "index"];
+
+  function parseRgbComponents(color) {
+    if (typeof color !== "string") return null;
+    const value = color.trim();
+
+    const hex = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (hex) {
+      const raw = hex[1];
+      const full = raw.length === 3
+        ? raw.split("").map((ch) => ch + ch).join("")
+        : raw;
+      return {
+        r: parseInt(full.slice(0, 2), 16),
+        g: parseInt(full.slice(2, 4), 16),
+        b: parseInt(full.slice(4, 6), 16)
+      };
+    }
+
+    const rgb = value.match(/^rgba?\(([^)]+)\)$/i);
+    if (rgb) {
+      const parts = rgb[1].split(",").map((part) => Number(part.trim()));
+      if (parts.length >= 3 && parts.slice(0, 3).every((num) => Number.isFinite(num))) {
+        return {
+          r: Math.max(0, Math.min(255, parts[0])),
+          g: Math.max(0, Math.min(255, parts[1])),
+          b: Math.max(0, Math.min(255, parts[2]))
+        };
+      }
+    }
+
+    return null;
+  }
+
+  function pickContrastTextColor(backgroundColor, darkText = "#2c2c2a", lightText = "#fff9f2") {
+    const rgb = parseRgbComponents(backgroundColor);
+    if (!rgb) return darkText;
+
+    const luminance = ((0.299 * rgb.r) + (0.587 * rgb.g) + (0.114 * rgb.b)) / 255;
+    return luminance > 0.6 ? darkText : lightText;
+  }
 
   // Rough torn-edge polygon, reused for every "torn" note.
   const TORN_CLIP_PATH = "polygon(1% 3%,6% 0%,13% 2%,20% 0%,28% 1%,35% 0%,44% 2%,52% 0%,60% 1%,68% 0%,76% 2%,84% 0%,92% 1%,99% 0%,100% 8%,98% 16%,100% 24%,99% 33%,100% 41%,98% 50%,100% 58%,99% 67%,100% 75%,98% 84%,100% 92%,99% 100%,90% 99%,82% 100%,74% 98%,66% 100%,58% 99%,50% 100%,42% 98%,34% 100%,26% 99%,18% 100%,10% 98%,2% 100%,0% 92%,1% 84%,0% 75%,2% 67%,0% 58%,1% 50%,0% 42%,2% 33%,0% 25%,1% 16%,0% 8%)";
@@ -67,10 +107,12 @@ const AppreciationWall = (() => {
     const style = document.createElement("style");
     style.textContent = `
       .aw-board{
+        --aw-cols: 3;
         background: #1c1c1a;
         border-radius: 16px;
         padding: 2rem 1.5rem;
         display: grid;
+        grid-template-columns: repeat(var(--aw-cols), minmax(0, 1fr));
         gap: 1.5rem 1rem;
       }
       .aw-heading{
@@ -101,7 +143,7 @@ const AppreciationWall = (() => {
         font-family: 'Kalam', cursive;
         font-weight: 700;
         color: #f4efe6;
-        font-size: 1.05rem;
+        font-size: 50px;
         border-bottom: 2px solid #f4efe6;
         padding-bottom: 2px;
         margin-bottom: 4px;
@@ -114,6 +156,19 @@ const AppreciationWall = (() => {
       .aw-note-wrap{
         position: relative;
         width: 100%;
+      }
+      .aw-asset-frame{
+        width: 100%;
+        border-radius: 3px;
+        overflow: hidden;
+        background: transparent;
+        border: none;
+        filter: none;
+      }
+      .aw-asset-frame img{
+        display: block;
+        width: 100%;
+        height: auto;
       }
       .aw-note{
         color: #2c2c2a;
@@ -152,6 +207,12 @@ const AppreciationWall = (() => {
         border: 1px solid rgba(255,255,255,0.35);
         filter: url(#appreciation-wall-grain);
       }
+
+      @media (max-width: 700px){
+        .aw-board{
+          grid-template-columns: 1fr;
+        }
+      }
     `;
     document.head.appendChild(style);
   }
@@ -161,7 +222,7 @@ const AppreciationWall = (() => {
     return list[seed % list.length];
   }
 
-  function buildNote(message, index) {
+  function buildNote(message, index, colorPalette) {
     const wrap = document.createElement("div");
     wrap.className = "aw-note-wrap";
 
@@ -170,12 +231,18 @@ const AppreciationWall = (() => {
     wrap.style.filter = "drop-shadow(0 3px 4px rgba(0,0,0,0.35))";
 
     const paperStyle = pick(PAPER_STYLES, index);
-    const color = pick(NOTE_COLORS, index + 1);
+    const palette = Array.isArray(colorPalette) && colorPalette.length
+      ? colorPalette
+      : NOTE_COLORS;
+    const color = pick(palette, index + 1);
     const font = pick(NOTE_FONTS, index);
+    const textColor = pickContrastTextColor(color, "#2c2c2a", "#fff9f2");
+    const fromColor = pickContrastTextColor(color, "rgba(44,44,42,0.72)", "rgba(255,249,242,0.82)");
 
     const note = document.createElement("div");
     note.className = "aw-note";
     note.style.background = color;
+    note.style.color = textColor;
     note.style.fontFamily = font;
     note.style.borderRadius = paperStyle === "torn" ? "0" : "2px";
     note.style.clipPath = paperStyle === "torn" ? TORN_CLIP_PATH : "none";
@@ -195,11 +262,13 @@ const AppreciationWall = (() => {
     const text = document.createElement("div");
     text.textContent = message.text;
     text.style.position = "relative";
+    text.style.color = textColor;
     note.appendChild(text);
 
     if (message.from) {
       const from = document.createElement("span");
       from.className = "aw-note-from";
+      from.style.color = fromColor;
       from.textContent = `— ${message.from}`;
       note.appendChild(from);
     }
@@ -208,7 +277,35 @@ const AppreciationWall = (() => {
     return wrap;
   }
 
-  function buildColumn(personEntry) {
+  function buildAssetNote(asset, index) {
+    const wrap = document.createElement("div");
+    wrap.className = "aw-note-wrap";
+
+    const rotation = ((index % 5) - 2) * 1.2;
+    wrap.style.transform = `rotate(${rotation}deg)`;
+    wrap.style.filter = "drop-shadow(0 3px 4px rgba(0,0,0,0.35))";
+
+    const frame = document.createElement("div");
+    frame.className = "aw-asset-frame";
+
+    const img = document.createElement("img");
+    img.src = asset.backgroundSrc;
+    img.alt = "Submitted note";
+
+    frame.appendChild(img);
+    wrap.appendChild(frame);
+    return wrap;
+  }
+
+  function buildColumn(personEntry, colorConfig) {
+        const personKey = String(personEntry.person || "").trim().toLowerCase();
+        const personColors = colorConfig && colorConfig.personFavoriteColors
+          ? colorConfig.personFavoriteColors[personKey]
+          : null;
+        const palette = Array.isArray(personColors) && personColors.length
+          ? personColors
+          : colorConfig.defaultColors;
+
     const column = document.createElement("div");
     column.className = "aw-column";
 
@@ -217,7 +314,17 @@ const AppreciationWall = (() => {
     name.textContent = personEntry.person;
     column.appendChild(name);
 
+    const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
+    assets.forEach((asset, i) => {
+      if (asset && asset.backgroundSrc) {
+        column.appendChild(buildAssetNote(asset, i));
+      }
+    });
+
     if (!personEntry.messages || personEntry.messages.length === 0) {
+      if (assets.length > 0) {
+        return column;
+      }
       const empty = document.createElement("div");
       empty.className = "aw-empty";
       empty.textContent = "no notes yet";
@@ -226,7 +333,7 @@ const AppreciationWall = (() => {
     }
 
     personEntry.messages.forEach((message, i) => {
-      column.appendChild(buildNote(message, i));
+      column.appendChild(buildNote(message, i, palette));
     });
 
     return column;
@@ -235,11 +342,13 @@ const AppreciationWall = (() => {
   /**
    * Renders the appreciation wall into `container`.
    * @param {HTMLElement} container  Required. Element to render into (cleared first).
-   * @param {Array<{person:string, messages:Array<{text:string, from:string}>}>} people  Required.
+  * @param {Array<{person:string, assets?:Array<{backgroundSrc:string}>, messages:Array<{text:string, from:string}>}>} people  Required.
    * @param {Object} [options]
    * @param {string} [options.title='appreciation wall']  Heading text.
    * @param {string} [options.subtitle='grab a pen, leave a note for someone who made your day']  Subheading text.
-   * @param {number} [options.columns=3]  Number of grid columns (people per row).
+  * @param {number} [options.columns=3]  Number of grid columns (people per row).
+  * @param {string[]} [options.defaultNoteColors]  Fallback note colors.
+  * @param {Object.<string, string[]>} [options.personFavoriteColors]  Person->palette map.
    */
   function renderWall(container, people, options = {}) {
     injectStyles();
@@ -254,14 +363,25 @@ const AppreciationWall = (() => {
     const {
       title = "appreciation wall",
       subtitle = "grab a pen, leave a note for someone who made your day",
-      columns = 3
+      columns = 3,
+      defaultNoteColors = NOTE_COLORS,
+      personFavoriteColors = {}
     } = options;
+
+    const colorConfig = {
+      defaultColors: Array.isArray(defaultNoteColors) && defaultNoteColors.length
+        ? defaultNoteColors
+        : NOTE_COLORS,
+      personFavoriteColors: personFavoriteColors && typeof personFavoriteColors === "object"
+        ? personFavoriteColors
+        : {}
+    };
 
     container.innerHTML = "";
 
     const board = document.createElement("div");
     board.className = "aw-board";
-    board.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+    board.style.setProperty("--aw-cols", String(columns));
 
     const heading = document.createElement("div");
     heading.className = "aw-heading";
@@ -272,7 +392,7 @@ const AppreciationWall = (() => {
     board.appendChild(heading);
 
     people.forEach((personEntry) => {
-      board.appendChild(buildColumn(personEntry));
+      board.appendChild(buildColumn(personEntry, colorConfig));
     });
 
     container.appendChild(board);

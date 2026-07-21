@@ -1,0 +1,19 @@
+{
+    "defaultColors": ["#F5F5DC", "#D2B48C", "#8B4513"],
+    "people": {
+        "adam": ["#676E45", "#FBE7C6", "#D7E9FF"],
+        "adham": ["#EAD7FF", "#676767", "#FFD3B6"],
+        "afif": ["#F5F5DC", "#D2B48C", "#8B4513"],
+        "asad": ["#E8DFF5", "#D9F2E6", "#FFE5B4"],
+        "ayan": ["#FFE8E8", "#DFF6FF", "#FFF3CD"],
+        "aydin": ["#FADADD", "#E2F0CB", "#CDE7FF"],
+        "dai": ["#FEE1E8", "#E8F9E9", "#FFF4C2"],
+        "rayan": ["#FFE3EC", "#DCEBFF", "#F6EAC2"],
+        "ruhan": ["#F3E8FF", "#D7F5E8", "#FFE4C4"],
+        "shad": ["#FDE2E4", "#E2ECE9", "#FFF1B6"],
+        "uthman": ["#F8EDEB", "#DDF4E7", "#E4E8FF"],
+        "yusuf": ["#2020E6", "#F28416", "#E7D8FF"],
+        "zakariah": ["#FFE5EC", "#D8F3FF", "#FFF0C9"],
+        "ziyad": ["#F7D9C4", "#D9EDBF", "#D6E5FA"]
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "defaultColors": ["#F5F5DC", "#D2B48C", "#8B4513"],
+    "people": {
+        "aiza": ["#FFD6E0", "#FBE7C6", "#D7E9FF"],
+        "aliyah": ["#EAD7FF", "#CDE7BE", "#FFD3B6"],
+        "anica": ["#F5F5DC", "#D2B48C", "#8B4513"],
+        "bilgesu": ["#E8DFF5", "#D9F2E6", "#FFE5B4"],
+        "ishmal": ["#FFE8E8", "#DFF6FF", "#FFF3CD"],
+        "javeria": ["#FADADD", "#E2F0CB", "#CDE7FF"],
+        "khadeja": ["#FEE1E8", "#E8F9E9", "#FFF4C2"],
+        "nour": ["#FFE3EC", "#DCEBFF", "#F6EAC2"],
+        "rameen": ["#F3E8FF", "#D7F5E8", "#FFE4C4"],
+        "safaa": ["#FDE2E4", "#E2ECE9", "#FFF1B6"],
+        "salma": ["#F8EDEB", "#DDF4E7", "#E4E8FF"],
+        "suweda": ["#FBE7E1", "#D8F3DC", "#E7D8FF"],
+        "yusra": ["#FFE5EC", "#D8F3FF", "#FFF0C9"],
+        "zainab": ["#F7D9C4", "#D9EDBF", "#D6E5FA"]
+    }
+}

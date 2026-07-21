@@ -326,15 +326,15 @@ a {
 }
 
 .board-top{
-  min-height: 100vh;
-  padding: 80px 24px;
-  box-sizing: border-box;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  aspect-ratio: 1920 / 1080;
 
   /* static background — doesn't move or change with scroll */
   background-image: url("images/glaze_top_bg.png");
   background-repeat: no-repeat;
-  background-position: center top;
-  background-size: cover;
+  background-position: center;
+  background-size: 100% 100%;
 
   color: white;
   text-align: center;

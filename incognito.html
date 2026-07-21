@@ -143,10 +143,10 @@
 
   <script>
     // ---- CONFIG ----
-    const CORRECT_PASSWORD = "changeme";      // swap for the real password
     const MAX_ATTEMPTS = 3;
     const LOCKOUT_MS = 5 * 60 * 1000;         // 5 minutes
     const REDIRECT_URL = "sisters.html";      // where a correct password sends them
+    const LOGIN_API_URL = "/api/incognito-login";
     const STORAGE_KEY = "incognito-lock";
 
     const form = document.getElementById("password-form");
@@ -217,19 +217,45 @@
       }
     }
 
-    form.addEventListener("submit", function(e){
+    form.addEventListener("submit", async function(e){
       e.preventDefault();
       if(input.disabled) return;
 
       const state = getState();
 
-      if(input.value === CORRECT_PASSWORD){
-        status.classList.remove("locked", "muted");
-        status.classList.add("correct");
-        status.textContent = "correct! welcome home ukhti";
-        setState({ attempts: 0, lockedUntil: null });
-        setTimeout(function(){ window.location.href = REDIRECT_URL; }, 900);
+      try {
+        const response = await fetch(LOGIN_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: input.value })
+        });
+
+        if(response.ok){
+          status.classList.remove("locked", "muted");
+          status.classList.add("correct");
+          status.textContent = "correct! welcome home ukhti";
+          setState({ attempts: 0, lockedUntil: null });
+          input.value = "";
+          setTimeout(function(){ window.location.href = REDIRECT_URL; }, 900);
+          return;
+        }
+      } catch (_) {
+        status.classList.remove("muted");
+        status.classList.add("locked");
+        status.textContent = "network error - try again";
         return;
+      }
+
+      if(input.value === ""){
+        status.classList.remove("locked");
+        status.classList.add("muted");
+        status.textContent = "enter password";
+        return;
+      }
+
+      {
+        status.classList.remove("locked", "muted");
+        status.classList.add("muted");
       }
 
       state.attempts = (state.attempts || 0) + 1;

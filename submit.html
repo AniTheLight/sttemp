@@ -13,6 +13,11 @@
     --ink:#f6efdf;
     --accent:#b8ff74;
     --muted:#c8c8c8;
+    --black:#121212;
+    --bone:#eef2ea;
+    --neon:#7cff6b;
+    --purple:#9b6bff;
+    --white:#ffffff;
   }
   *{ box-sizing:border-box; }
   body{
@@ -21,10 +26,56 @@
     background:radial-gradient(circle at 10% 0%, #2a3d2c 0%, #151515 52%, #0f0f0f 100%);
     color:var(--ink);
     font-family:'Kalam', cursive;
-    display:grid;
-    place-items:center;
-    padding:24px;
+    display:block;
+    padding:0;
   }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .banner{
+    position:sticky;
+    top:0;
+    z-index:80;
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 32px;
+    background:var(--black);
+    border-bottom:1px solid rgba(124,255,107,0.15);
+    }
+
+.banner .logo{
+  font-family:'Poppins',sans-serif;
+  font-size:1.1rem;
+  letter-spacing:0.01em;
+  color:var(--bone);
+}
+.banner .logo span{ color:var(--neon); }
+
+.banner-buttons{ display:flex; gap:12px; }
+
+.chip-btn{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:0.8rem;
+  font-weight:500;
+  letter-spacing:0.02em;
+  padding:10px 20px;
+  border-radius:999px;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+
+  .chip-btn.primary{ background:var(--neon); color:var(--black); }
+  .chip-btn.sister{background:var(--purple); color:var(--white);}
+  .chip-btn.primary:hover{ background:var(--bone); }
+  .chip-btn.ghost{ background:transparent; color:var(--bone); border-color:rgba(238,242,234,0.35); }
+  .chip-btn.ghost:hover{ border-color:var(--neon); color:var(--neon); }
+
   .panel{
     width:min(680px, 100%);
     background:rgba(35,35,35,0.92);
@@ -34,6 +85,7 @@
     box-shadow:0 16px 40px rgba(0,0,0,0.4);
     display:grid;
     gap:14px;
+    margin:28px auto 24px;
   }
   h1{
     margin:0;
@@ -41,7 +93,7 @@
     font-size:clamp(1.4rem, 4.2vw, 2rem);
   }
   p{ margin:0; color:var(--muted); }
-  .field{ display:grid; gap:6px; }
+  .field{ display:grid; gap:6px; padding-bottom:10px; }
   label{ font-size:1rem; }
   input, textarea{
     width:100%;
@@ -59,6 +111,7 @@
     gap:10px;
     flex-wrap:wrap;
     align-items:center;
+    margin-top: 15px;
   }
   button, .link-btn{
     border:none;
@@ -83,9 +136,22 @@
   }
   #status.ok{ color:#98ff98; }
   #status.err{ color:#ff9d9d; }
+
+  .note {
+    font-size: 11px;
+  }
 </style>
 </head>
 <body>
+
+    <header class="banner">
+        <a href="index.html"><div class="logo">STEM<span>Muslims</span></div></a>
+        <div class="banner-buttons">
+        <a href="sisters.html" class="chip-btn ghost">Incognito</a>
+        <a href="submit.html" class="chip-btn primary">Glaze Submissions</a>
+        </div>
+    </header>
+
   <main class="panel">
     <h1>Glaze Submission</h1>
     <p>Submit an image, a message, or both. Image files are auto-numbered in each person folder.</p>
@@ -103,11 +169,12 @@
 
       <div class="field">
         <label for="message">Message (optional)</label>
-        <textarea id="message" name="message" placeholder="Write something kind..."></textarea>
+        <textarea id="message" name="message" placeholder="Anica and Nour for life"></textarea>
       </div>
 
       <div class="field">
-        <label for="image">Handwritten Image (optional: PNG or SVG)</label>
+        <label for="image">Handwritten Image or can make something on canva! (optional: PNG or SVG)</label>
+        <p class='note'>Note that your name will not come up if you put an image, so make sure to write your name on it!</p>
         <input id="image" name="image" type="file" accept=".png,.svg,image/png,image/svg+xml">
       </div>
 

@@ -26,6 +26,46 @@ const PinboardCards = (() => {
     "/images/written_glaze/paper_bgs/3.jpg"
   ];
 
+  function parseRgbComponents(color) {
+    if (typeof color !== "string") return null;
+    const value = color.trim();
+
+    const hex = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (hex) {
+      const raw = hex[1];
+      const full = raw.length === 3
+        ? raw.split("").map((ch) => ch + ch).join("")
+        : raw;
+      return {
+        r: parseInt(full.slice(0, 2), 16),
+        g: parseInt(full.slice(2, 4), 16),
+        b: parseInt(full.slice(4, 6), 16)
+      };
+    }
+
+    const rgb = value.match(/^rgba?\(([^)]+)\)$/i);
+    if (rgb) {
+      const parts = rgb[1].split(",").map((part) => Number(part.trim()));
+      if (parts.length >= 3 && parts.slice(0, 3).every((num) => Number.isFinite(num))) {
+        return {
+          r: Math.max(0, Math.min(255, parts[0])),
+          g: Math.max(0, Math.min(255, parts[1])),
+          b: Math.max(0, Math.min(255, parts[2]))
+        };
+      }
+    }
+
+    return null;
+  }
+
+  function pickContrastTextColor(backgroundColor, darkText = "#2c2c2a", lightText = "#fff9f2") {
+    const rgb = parseRgbComponents(backgroundColor);
+    if (!rgb) return darkText;
+
+    const luminance = ((0.299 * rgb.r) + (0.587 * rgb.g) + (0.114 * rgb.b)) / 255;
+    return luminance > 0.6 ? darkText : lightText;
+  }
+
   function injectStyles() {
     if (stylesInjected) return;
     stylesInjected = true;
@@ -202,6 +242,22 @@ const PinboardCards = (() => {
         line-height: 1.4;
         color: #2c2c2a;
       }
+      .tearoff-note .tearoff-image{
+        display: block;
+        width: 100%;
+        max-height: 240px;
+        object-fit: contain;
+        margin-top: 8px;
+        border-radius: 2px;
+      }
+      .tearoff-note.image-only{
+        background: transparent;
+        padding: 0;
+        box-shadow: none;
+      }
+      .tearoff-note.image-only .tearoff-image{
+        margin-top: 0;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -366,7 +422,7 @@ const PinboardCards = (() => {
    *
    * @param {Object} opts
    * @param {string} opts.receiverName  Required. Name shown as the poster headline.
-   * @param {Array<{from:string, text:string}>} opts.messages  Required. One tab per entry.
+  * @param {Array<{from:string, text?:string, imageSrc?:string}>} opts.messages  Required. One tab per entry; can be empty.
    * @param {string} [opts.headline]  Full headline text; defaults to `"${receiverName},\nyou're appreciated."`.
    * @param {string} [opts.paper='#e8543a']  Poster background colour.
    * @param {string} [opts.noteColor='#fdf1a8']  Background colour of revealed notes.
@@ -390,12 +446,17 @@ const PinboardCards = (() => {
     if (!receiverName) {
       throw new Error("createTearOffPoster requires receiverName.");
     }
-    if (!Array.isArray(messages) || messages.length === 0) {
-      throw new Error("createTearOffPoster requires a non-empty messages array.");
+    if (!Array.isArray(messages)) {
+      throw new Error("createTearOffPoster requires messages to be an array.");
     }
 
     const wrapper = document.createElement("div");
     wrapper.style.width = typeof width === "number" ? `${width}px` : String(width);
+
+    const posterTextColor = pickContrastTextColor(paper, "#2c2c2a", "#fff9f2");
+    const hintColor = pickContrastTextColor(paper, "rgba(44,44,42,0.75)", "rgba(255,249,242,0.82)");
+    const noteTextColor = pickContrastTextColor(noteColor, "#2c2c2a", "#fff9f2");
+    const closeColor = pickContrastTextColor(noteColor, "rgba(44,44,42,0.55)", "rgba(255,249,242,0.75)");
 
     const poster = document.createElement("div");
     poster.className = "tearoff-poster";
@@ -406,7 +467,7 @@ const PinboardCards = (() => {
 
     const h2 = document.createElement("h2");
     h2.style.fontFamily = headlineFont;
-    h2.style.color = "#fff9f2";
+    h2.style.color = posterTextColor;
     h2.style.fontSize = "1.6rem";
     const headlineText = headline || `${receiverName},\nyou're appreciated.`;
     headlineText.split("\n").forEach((line, i, arr) => {
@@ -418,7 +479,7 @@ const PinboardCards = (() => {
     const hint = document.createElement("p");
     hint.className = "tearoff-hint";
     hint.style.fontFamily = font;
-    hint.style.color = "rgba(255,249,242,0.75)";
+    hint.style.color = hintColor;
     hint.textContent = "tear a tab to see who left you a note";
     head.appendChild(hint);
 
@@ -435,14 +496,18 @@ const PinboardCards = (() => {
     wrapper.appendChild(revealArea);
 
     messages.forEach((m) => {
+      const senderName = String(m && m.from ? m.from : "anonymous").trim() || "anonymous";
+      const messageText = String(m && m.text ? m.text : "").trim();
+      const imageSrc = m && typeof m.imageSrc === "string" ? m.imageSrc : "";
+
       const tab = document.createElement("button");
       tab.className = "tearoff-tab";
-      tab.setAttribute("aria-label", `Tear off tab for ${m.from}`);
+      tab.setAttribute("aria-label", `Tear off tab for ${senderName}`);
 
       const label = document.createElement("span");
       label.style.fontFamily = font;
-      label.style.color = "#fff9f2";
-      label.textContent = m.from;
+      label.style.color = posterTextColor;
+      label.textContent = senderName;
       tab.appendChild(label);
 
       let note = null;
@@ -467,27 +532,48 @@ const PinboardCards = (() => {
       function showNote() {
         note = document.createElement("div");
         note.className = "tearoff-note";
-        note.style.background = noteColor;
+        const isImageOnly = Boolean(imageSrc) && !messageText;
+        if (isImageOnly) {
+          note.classList.add("image-only");
+        } else {
+          note.style.background = noteColor;
+        }
 
         const closeBtn = document.createElement("button");
         closeBtn.className = "tearoff-close";
-        closeBtn.setAttribute("aria-label", `Put tab back for ${m.from}`);
+        closeBtn.setAttribute("aria-label", `Put tab back for ${senderName}`);
+        closeBtn.style.color = closeColor;
         closeBtn.textContent = "\u00D7";
         closeBtn.addEventListener("click", restoreTab);
 
-        const fromLine = document.createElement("p");
-        fromLine.className = "tearoff-from";
-        fromLine.style.fontFamily = font;
-        fromLine.textContent = `from ${m.from}`;
-
-        const textLine = document.createElement("p");
-        textLine.className = "tearoff-text";
-        textLine.style.fontFamily = font;
-        textLine.textContent = m.text;
-
         note.appendChild(closeBtn);
-        note.appendChild(fromLine);
-        note.appendChild(textLine);
+
+        if (!isImageOnly) {
+          const fromLine = document.createElement("p");
+          fromLine.className = "tearoff-from";
+          fromLine.style.fontFamily = font;
+          fromLine.style.color = noteTextColor;
+          fromLine.textContent = `from ${senderName}`;
+          note.appendChild(fromLine);
+        }
+
+        if (messageText) {
+          const textLine = document.createElement("p");
+          textLine.className = "tearoff-text";
+          textLine.style.fontFamily = font;
+          textLine.style.color = noteTextColor;
+          textLine.textContent = messageText;
+          note.appendChild(textLine);
+        }
+
+        if (imageSrc) {
+          const imageNode = document.createElement("img");
+          imageNode.className = "tearoff-image";
+          imageNode.src = imageSrc;
+          imageNode.alt = `Image from ${senderName}`;
+          note.appendChild(imageNode);
+        }
+
         revealArea.appendChild(note);
 
         requestAnimationFrame(() => {

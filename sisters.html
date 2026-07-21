@@ -41,105 +41,103 @@
     <section class="section">
       <img src="images/lost-sisters.png" alt="">
     </section>
+
+    <section class="section">
+      <img src="images/glaze_top_bg.png" alt="">
+    </section>
   </div>
 
   <div class="board">
-    <div class="board-top"></div>
     <div id="my-cards"></div>
 
-    <!-- 3. Load the component script -->
-    <script src="pinboard-cards.js"></script>
+    <!-- 3. Load the wall renderer -->
+    <script src="appreciationwall.js"></script>
 
     <script>
       const container = document.getElementById("my-cards");
 
-      function titleCase(value) {
-        return String(value)
-          .split(/[_\-\s]+/)
-          .filter(Boolean)
-          .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-          .join(" ");
-      }
+      function normalizePeople(rawPeople) {
+        return (Array.isArray(rawPeople) ? rawPeople : []).map((personEntry) => {
+          const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
+          const messages = Array.isArray(personEntry.messages) ? personEntry.messages : [];
+          const normalizedMessages = messages
+            .map((messageItem) => {
+              if (typeof messageItem === "string") {
+                const text = messageItem.trim();
+                return text ? { text, from: "" } : null;
+              }
 
-      function renderPerson(personEntry) {
-        const personBlock = document.createElement("section");
-        personBlock.className = "person-block";
+              if (messageItem && typeof messageItem === "object") {
+                const text = String(messageItem.text || "").trim();
+                if (!text) return null;
+                return {
+                  text,
+                  from: String(messageItem.from || "").trim()
+                };
+              }
 
-        const nameCard = PinboardCards.createNameCard({
-          name: titleCase(personEntry.person),
-          paper: "#dfe8c9",
-          pin: "#e2b64a"
+              return null;
+            })
+            .filter(Boolean);
+
+          return {
+            person: String(personEntry.person || ""),
+            group: String(personEntry.group || "girlies"),
+            assets: assets
+              .map((asset) => {
+                if (!asset || !asset.backgroundSrc) return null;
+                return {
+                  backgroundSrc: String(asset.backgroundSrc),
+                  aspectRatio: String(asset.aspectRatio || "1 / 1")
+                };
+              })
+              .filter(Boolean),
+            messages: normalizedMessages
+          };
         });
-        personBlock.appendChild(nameCard);
-
-        const cardsWrap = document.createElement("div");
-        cardsWrap.className = "person-cards";
-
-        const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
-        const messages = Array.isArray(personEntry.messages) ? personEntry.messages : [];
-
-        assets.forEach((asset) => {
-          const card = PinboardCards.createCustomNoteCard({
-            backgroundSrc: asset.backgroundSrc,
-            aspectRatio: asset.aspectRatio || "1 / 1",
-            padding: asset.padding || "10% 10% 8%",
-            width: 280
-          });
-          cardsWrap.appendChild(card);
-        });
-
-      messages.forEach((messageItem) => {
-        const messageText = typeof messageItem === "string"
-          ? messageItem
-          : String(messageItem && messageItem.text ? messageItem.text : "");
-        if (!messageText) return;
-
-        const sender = typeof messageItem === "object" && messageItem
-          ? String(messageItem.from || "").trim()
-          : "";
-        const composedMessage = sender
-          ? `${messageText}\n~ ${sender}`
-          : messageText;
-
-        const messageCard = PinboardCards.createMessageCard({
-          message: composedMessage,
-          pin: "#b5482f"
-        });
-        cardsWrap.appendChild(messageCard);
-      });
-
-        if (!assets.length && !messages.length) {
-          const empty = document.createElement("p");
-          empty.className = "empty-note";
-          empty.textContent = "No submissions yet.";
-          cardsWrap.appendChild(empty);
-        }
-
-        personBlock.appendChild(cardsWrap);
-        container.appendChild(personBlock);
       }
 
       async function loadCards() {
         container.textContent = "Loading submissions...";
         try {
-          const response = await fetch("/api/glaze-submissions?group=girlies");
+          const [response, colorsResponse] = await Promise.all([
+            fetch("/api/glaze-submissions?group=girlies"),
+            fetch("images/written_glaze/girlies/colours.json")
+          ]);
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const payload = await response.json();
-
-          container.innerHTML = "";
-          const people = Array.isArray(payload.people) ? payload.people : [];
-
-          people.forEach(renderPerson);
-
-          if (!people.length) {
-            container.textContent = "No people found in submissions folder.";
+          let colorsPayload = {};
+          if (colorsResponse.ok) {
+            const colorText = await colorsResponse.text();
+            if (colorText.trim()) {
+              try {
+                colorsPayload = JSON.parse(colorText);
+              } catch (_) {
+                colorsPayload = {};
+              }
+            }
           }
+
+          const defaultNoteColors = Array.isArray(colorsPayload.defaultColors)
+            ? colorsPayload.defaultColors
+            : ["#F5F5DC", "#D2B48C", "#8B4513"];
+          const personFavoriteColors = colorsPayload.people && typeof colorsPayload.people === "object"
+            ? colorsPayload.people
+            : {};
+
+          const people = normalizePeople(payload.people);
+          AppreciationWall.renderWall(container, people, {
+            title: "sisters glaze wall",
+            subtitle: "This year wouldn't have been what it was without any of you. Thank you!",
+            columns: 3,
+            defaultNoteColors,
+            personFavoriteColors
+          });
         } catch (error) {
           container.innerHTML = "";
-          const fallback = PinboardCards.createMessageCard({
-            message: "Could not load submissions. Start the local server and retry.",
-            pin: "#b5482f"
-          });
+          const fallback = document.createElement("p");
+          fallback.className = "empty-note";
+          fallback.textContent = "Could not load submissions. Start the local server and retry.";
           container.appendChild(fallback);
         }
       }
