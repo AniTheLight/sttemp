@@ -16,15 +16,19 @@
     --neon:#7cff6b;
     --purple:#9b6bff;
     --white:#ffffff;
+    --navbar-purple:#c9b8f0;
   }
 
   body{
     margin: 0;
     min-height: 100vh;
     padding: 0 24px 40px;
-    background: #2f2f2f;
+    background-color: #ffffff;
+    background-image: url("images/glaze-bg.png");
+    background-repeat: repeat-y;
+    background-size: 100% auto;
     font-family: 'Kalam', cursive;
-    color: #f5f0e6;
+    color: #2c2c2a;
   }
 
   a {
@@ -42,16 +46,16 @@
     justify-content: space-between;
     padding: 0 32px;
     margin: 0 -24px;
-    background: var(--black);
-    border-bottom: 1px solid rgba(124,255,107,0.15);
+    background: var(--navbar-purple);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .banner .logo{
     font-family: 'Poppins', sans-serif;
     font-size: 1.1rem;
     letter-spacing: 0.01em;
-    color: var(--bone);
+    color: #2c2c2a;
   }
-  .banner .logo span{ color: var(--neon); }
+  .banner .logo span{ color: var(--purple); }
   .banner-buttons{ display: flex; gap: 12px; }
 
   .chip-btn{
@@ -69,10 +73,10 @@
     align-items: center;
     justify-content: center;
   }
-  .chip-btn.primary{ background: var(--neon); color: var(--black); }
-  .chip-btn.primary:hover{ background: var(--bone); }
-  .chip-btn.ghost{ background: transparent; color: var(--bone); border-color: rgba(238,242,234,0.35); }
-  .chip-btn.ghost:hover{ border-color: var(--neon); color: var(--neon); }
+  .chip-btn.primary{ background: var(--purple); color: var(--white); }
+  .chip-btn.primary:hover{ background: #7c4fe0; }
+  .chip-btn.ghost{ background: transparent; color: #2c2c2a; border-color: rgba(44,44,42,0.35); }
+  .chip-btn.ghost:hover{ border-color: var(--purple); color: var(--purple); }
 
   #my-cards{
     width: min(1100px, 100%);
