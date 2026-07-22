@@ -2,32 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Submit Glaze Note</title>
+<title>My Thank You Page</title>
+
+<!-- 1. Load the fonts the cards use -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"> 
 <style>
+  /* page-level layout */
+
   :root{
-    --bg:#121212;
-    --panel:#232323;
-    --ink:#f6efdf;
-    --accent:#b8ff74;
-    --muted:#c8c8c8;
     --black:#121212;
     --bone:#eef2ea;
     --neon:#7cff6b;
     --purple:#9b6bff;
     --white:#ffffff;
   }
-  *{ box-sizing:border-box; }
+
   body{
-    margin:0;
-    min-height:100vh;
-    background:radial-gradient(circle at 10% 0%, #2a3d2c 0%, #151515 52%, #0f0f0f 100%);
-    color:var(--ink);
-    font-family:'Kalam', cursive;
-    display:block;
-    padding:0;
+    margin: 0;
+    min-height: 100vh;
+    padding: 0 24px 40px;
+    background-color: #2f2f2f;
+    background-image: url("images/boys-bg.png");
+    background-repeat: repeat-y;
+    background-size: 100% auto;
+    font-family: 'Kalam', cursive;
+    color: #f5f0e6;
   }
 
   a {
@@ -36,229 +36,208 @@
   }
 
   .banner{
-    position:sticky;
-    top:0;
-    z-index:80;
-    height:72px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 32px;
-    background:var(--black);
-    border-bottom:1px solid rgba(124,255,107,0.15);
-    }
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    margin: 0 -24px;
+    background: var(--black);
+    border-bottom: 1px solid rgba(124,255,107,0.15);
+  }
+  .banner .logo{
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.01em;
+    color: var(--bone);
+  }
+  .banner .logo span{ color: var(--neon); }
+  .banner-buttons{ display: flex; gap: 12px; }
 
-.banner .logo{
-  font-family:'Poppins',sans-serif;
-  font-size:1.1rem;
-  letter-spacing:0.01em;
-  color:var(--bone);
-}
-.banner .logo span{ color:var(--neon); }
+  .chip-btn{
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chip-btn.primary{ background: var(--neon); color: var(--black); }
+  .chip-btn.primary:hover{ background: var(--bone); }
+  .chip-btn.ghost{ background: transparent; color: var(--bone); border-color: rgba(238,242,234,0.35); }
+  .chip-btn.ghost:hover{ border-color: var(--neon); color: var(--neon); }
 
-.banner-buttons{ display:flex; gap:12px; }
+  #my-cards{
+    width: min(1100px, 100%);
+    margin: 28px auto 0;
+    display: grid;
+    gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  }
+  .person-block{
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+  }
+  .person-cards{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .empty-note{
+    margin: 0;
+    opacity: 0.85;
+  }
 
-.chip-btn{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:0.8rem;
-  font-weight:500;
-  letter-spacing:0.02em;
-  padding:10px 20px;
-  border-radius:999px;
-  border:1px solid transparent;
-  cursor:pointer;
-  transition:all 0.2s ease;
-}
-
-  .chip-btn.primary{ background:var(--neon); color:var(--black); }
-  .chip-btn.sister{background:var(--purple); color:var(--white);}
-  .chip-btn.primary:hover{ background:var(--bone); }
-  .chip-btn.ghost{ background:transparent; color:var(--bone); border-color:rgba(238,242,234,0.35); }
-  .chip-btn.ghost:hover{ border-color:var(--neon); color:var(--neon); }
-
-  .panel{
-    width:min(680px, 100%);
-    background:rgba(35,35,35,0.92);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:18px;
-    padding:24px;
-    box-shadow:0 16px 40px rgba(0,0,0,0.4);
-    display:grid;
-    gap:14px;
-    margin:28px auto 24px;
-  }
-  h1{
-    margin:0;
-    font-family:'Archivo Black', sans-serif;
-    font-size:clamp(1.4rem, 4.2vw, 2rem);
-  }
-  p{ margin:0; color:var(--muted); }
-  .field{ display:grid; gap:6px; padding-bottom:10px; }
-  label{ font-size:1rem; }
-  input, textarea{
-    width:100%;
-    border:1px solid rgba(255,255,255,0.2);
-    border-radius:10px;
-    background:#1a1a1a;
-    color:var(--ink);
-    font:inherit;
-    padding:10px 12px;
-  }
-  textarea{ min-height:100px; resize:vertical; }
-  input[type="file"]{ padding:8px; }
-  .actions{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:center;
-    margin-top: 15px;
-  }
-  button, .link-btn{
-    border:none;
-    border-radius:999px;
-    padding:10px 18px;
-    font:600 0.95rem 'Archivo Black', sans-serif;
-    cursor:pointer;
-  }
-  button{
-    background:var(--accent);
-    color:#0f150f;
-  }
-  .link-btn{
-    background:transparent;
-    color:var(--ink);
-    border:1px solid rgba(255,255,255,0.3);
-    text-decoration:none;
-  }
-  #status{
-    min-height:1.4em;
-    font-size:0.95rem;
-  }
-  #status.ok{ color:#98ff98; }
-  #status.err{ color:#ff9d9d; }
-
-  .note {
-    font-size: 13px;
+  .section{
+    justify-self: center;
   }
 </style>
 </head>
 <body>
 
-    <header class="banner">
-        <a href="/"><div class="logo">STEM<span>Muslims</span></div></a>
-        <div class="banner-buttons">
-        <a href="sisters.html" class="chip-btn ghost">Incognito</a>
-        <a href="submit.html" class="chip-btn primary">Glaze Submissions</a>
-        </div>
-    </header>
+  <header class="banner">
+    <a href="/"><div class="logo">STEM<span>Muslims</span></div></a>
+    <div class="banner-buttons">
+      <a href="sisters.html" class="chip-btn ghost">Incognito</a>
+      <a href="submit.html" class="chip-btn primary">Glaze Submissions</a>
+    </div>
+  </header>
 
-  <main class="panel">
-    <h1>Glaze Submission</h1>
-    <p>Submit an image, a message, or both. Image files are auto-numbered in each person folder.</p>
+    <section class="section">
+      <img src="images/comm-pliments.png" alt="">
+    </section>
 
-    <form id="submission-form">
-      <div class="field">
-        <label for="person">To:</label>
-        <p class="note">To write a message to comm put general</p>
-        <input id="person" name="person" type="text" placeholder="e.g. anica" required>
-      </div>
+  <div id="my-cards"></div>
 
-      <div class="field">
-        <label for="from">From:</label>
-        <input id="from" name="from" type="text" placeholder="e.g. nour" required>
-      </div>
-
-      <div class="field">
-        <label for="message">Message (optional)</label>
-        <textarea id="message" name="message" placeholder="Anica and Nour for life"></textarea>
-      </div>
-
-      <div class="field">
-        <label for="image">Handwritten Image or can make something on canva! (optional: PNG or SVG)</label>
-        <input id="image" name="image" type="file" accept=".png,.svg,image/png,image/svg+xml">
-      </div>
-
-      <div class="actions">
-        <button type="submit">Submit</button>
-        <a class="link-btn" href="glaze.html">View Board</a>
-      </div>
-    </form>
-
-    <p id="status"></p>
-  </main>
+  <!-- 3. Load the component script -->
+  <script src="ani-pinboard-card.js"></script>
 
   <script>
-    const form = document.getElementById('submission-form');
-    const statusNode = document.getElementById('status');
+    const container = document.getElementById("my-cards");
 
-    function setStatus(message, kind) {
-      statusNode.textContent = message;
-      statusNode.className = kind ? kind : '';
+    function titleCase(value) {
+      return String(value)
+        .split(/[_\-\s]+/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
     }
 
-    function readFileAsDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error('Could not read file.'));
-        reader.readAsDataURL(file);
-      });
+    function getPaletteForPerson(personEntry, colorConfig) {
+      const peopleMap = colorConfig && colorConfig.people && typeof colorConfig.people === "object"
+        ? colorConfig.people
+        : {};
+      const defaultColors = Array.isArray(colorConfig && colorConfig.defaultColors)
+        ? colorConfig.defaultColors
+        : ["#e8543a", "#fdf1a8", "#ffe7ce"];
+
+      const key = String(personEntry && personEntry.person ? personEntry.person : "").trim().toLowerCase();
+      const fromMap = Array.isArray(peopleMap[key]) ? peopleMap[key] : null;
+
+      return fromMap && fromMap.length ? fromMap : defaultColors;
     }
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+    function renderPerson(personEntry, colorConfig) {
+      const personBlock = document.createElement("section");
+      personBlock.className = "person-block";
 
-      const person = document.getElementById('person').value.trim();
-      const from = document.getElementById('from').value.trim();
-      const message = document.getElementById('message').value.trim();
-      const file = document.getElementById('image').files[0] || null;
+      const cardsWrap = document.createElement("div");
+      cardsWrap.className = "person-cards";
 
-      if (!person) {
-        setStatus('Person name is required.', 'err');
-        return;
-      }
+      const assets = Array.isArray(personEntry.assets) ? personEntry.assets : [];
+      const messages = Array.isArray(personEntry.messages) ? personEntry.messages : [];
 
-      if (!from) {
-        setStatus('Sender name is required.', 'err');
-        return;
-      }
-
-      if (!message && !file) {
-        setStatus('Add a message or an image before submitting.', 'err');
-        return;
-      }
-
-      setStatus('Submitting...', '');
-
-      try {
-        const payload = { person, from, message };
-
-        if (file) {
-          const isAllowed = file.type === 'image/png' || file.type === 'image/svg+xml' || /\.(png|svg)$/i.test(file.name);
-          if (!isAllowed) {
-            setStatus('Only PNG or SVG files are supported.', 'err');
-            return;
+      const normalizedMessages = messages
+        .map((messageItem) => {
+          if (typeof messageItem === "string") {
+            const text = messageItem.trim();
+            if (!text) return null;
+            return { from: "anonymous", text };
           }
-          payload.imageDataUrl = await readFileAsDataUrl(file);
+
+          if (messageItem && typeof messageItem === "object") {
+            const text = String(messageItem.text || "").trim();
+            if (!text) return null;
+            const from = String(messageItem.from || "anonymous").trim() || "anonymous";
+            return { from, text };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+
+      const normalizedImageEntries = assets
+        .map((asset, index) => {
+          if (!asset || !asset.backgroundSrc) return null;
+          const sender = String(asset.from || "").trim();
+          return {
+            from: sender || `image ${index + 1}`,
+            text: "",
+            imageSrc: String(asset.backgroundSrc)
+          };
+        })
+        .filter(Boolean);
+
+      const posterEntries = [...normalizedMessages, ...normalizedImageEntries];
+
+      const palette = getPaletteForPerson(personEntry, colorConfig);
+      const tearOffPoster = PinboardCards.createTearOffPoster({
+        receiverName: titleCase(personEntry.person),
+        messages: posterEntries,
+        paper: palette[0] || "#e8543a",
+        noteColor: palette[1] || "#fdf1a8",
+        width: 320
+      });
+      cardsWrap.appendChild(tearOffPoster);
+
+      personBlock.appendChild(cardsWrap);
+      container.appendChild(personBlock);
+    }
+
+    async function loadCards() {
+      container.textContent = "Loading submissions...";
+      try {
+        const [response, colorsResponse] = await Promise.all([
+          fetch("/api/glaze-submissions?group=boys"),
+          fetch("/api/glaze-colors?group=boys")
+        ]);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        const colorConfig = colorsResponse.ok ? await colorsResponse.json() : {};
+
+        container.innerHTML = "";
+        const people = Array.isArray(payload.people) ? payload.people : [];
+
+        people.forEach((personEntry) => renderPerson(personEntry, colorConfig));
+
+        if (!people.length) {
+          container.textContent = "No people found in submissions folder.";
         }
-
-        const response = await fetch('/api/glaze-submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.error || 'Submission failed.');
-        }
-
-        setStatus('Submitted successfully. Open View Board to see it.', 'ok');
-        form.reset();
       } catch (error) {
-        setStatus(error.message || 'Submission failed.', 'err');
+        container.innerHTML = "";
+        const fallback = PinboardCards.createMessageCard({
+          message: "Could not load submissions. Start the local server and retry.",
+          pin: "#b5482f"
+        });
+        container.appendChild(fallback);
       }
-    });
+    }
+
+    loadCards();
   </script>
+
 </body>
 </html>
