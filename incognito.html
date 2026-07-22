@@ -141,6 +141,71 @@
   .status-msg.locked{
     color:#ff8a6b;
   }
+
+  /* ---- reaction image popup ---- */
+  .reaction-overlay{
+    position:fixed;
+    inset:0;
+    z-index:10;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(5,7,5,0.55);
+    opacity:0;
+    transition:opacity 0.2s ease;
+  }
+
+  .reaction-overlay.show{
+    display:flex;
+    opacity:1;
+  }
+
+  .reaction-card{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+  }
+
+  .reaction-img{
+    max-width:min(70vw, 340px);
+    max-height:60vh;
+    border-radius:24px;
+    border:4px solid var(--neon);
+    box-shadow:0 0 40px var(--neon-dim);
+    object-fit:cover;
+    animation:reactionPop 0.5s ease;
+  }
+
+  @keyframes reactionPop{
+    0%{ opacity:0; transform:scale(0.7) rotate(-3deg); }
+    60%{ opacity:1; transform:scale(1.05) rotate(1deg); }
+    100%{ opacity:1; transform:scale(1) rotate(0deg); }
+  }
+
+  .reaction-close{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:10px 28px;
+    border-radius:999px;
+    border:2px solid var(--neon);
+    background:var(--black);
+    color:var(--neon);
+    font-family:'Space Grotesk',monospace;
+    font-weight:600;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    font-size:0.9rem;
+    cursor:pointer;
+  }
+
+  .reaction-close:hover{
+    background:var(--neon);
+    color:var(--black);
+  }
 </style>
 </head>
 <body>
@@ -159,6 +224,13 @@
     <div id="status-msg" class="status-msg muted">3 tries remaining</div>
   </div>
 
+  <div id="reaction-overlay" class="reaction-overlay">
+    <div class="reaction-card">
+      <img id="reaction-img" class="reaction-img" src="" alt="">
+      <button type="button" id="reaction-close" class="reaction-close">✕ try again</button>
+    </div>
+  </div>
+
   <script>
     // ---- CONFIG ----
     const MAX_ATTEMPTS = 3;
@@ -166,6 +238,56 @@
     const REDIRECT_URL = "sisters.html";      // where a correct password sends them
     const LOGIN_API_URL = "/api/incognito-login";
     const STORAGE_KEY = "incognito-lock";
+
+    // ---- REACTION IMAGES/GIFS ----
+    // Drop your own image/gif URLs (or local paths like "images/wrong1.png") in here.
+    // A random one from the matching array pops up each time.
+    const CORRECT_IMAGES = [
+      "images/nour.png"
+    ];
+
+    const WRONG_IMAGES = [
+      "images/adam.gif",
+      { src: "images/freemixingpdf.png", link: "images/freemixing.pdf" }
+    ];
+
+    const LOCKED_IMAGES = [
+      "images/mob-dawud.png"
+    ];
+
+    const reactionOverlay = document.getElementById("reaction-overlay");
+    const reactionImg = document.getElementById("reaction-img");
+    const reactionClose = document.getElementById("reaction-close");
+
+    function showReaction(pool){
+      if(!pool || pool.length === 0) return;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      const src = typeof pick === "string" ? pick : pick.src;
+      const link = typeof pick === "object" ? pick.link : null;
+      
+      reactionImg.src = src;
+      
+      if(link){
+          reactionImg.style.cursor = "pointer";
+          reactionImg.onclick = function(){ window.open(link, "_blank"); };
+      }else{
+          reactionImg.style.cursor = "default";
+          reactionImg.onclick = null;
+       }
+      
+       reactionOverlay.classList.add("show");
+    }
+    
+
+    function hideReaction(){
+      reactionOverlay.classList.remove("show");
+      input.focus();
+    }
+
+    reactionClose.addEventListener("click", hideReaction);
+    reactionOverlay.addEventListener("click", function(e){
+      if(e.target === reactionOverlay) hideReaction();
+    });
 
     const form = document.getElementById("password-form");
     const input = document.getElementById("password-input");
@@ -235,6 +357,13 @@
       }
     }
 
+    input.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
     form.addEventListener("submit", async function(e){
       e.preventDefault();
       if(input.disabled) return;
@@ -254,7 +383,8 @@
           status.textContent = "correct! welcome home ukhti";
           setState({ attempts: 0, lockedUntil: null });
           input.value = "";
-          setTimeout(function(){ window.location.href = REDIRECT_URL; }, 900);
+          showReaction(CORRECT_IMAGES);
+          setTimeout(function(){ window.location.href = REDIRECT_URL; }, 1300);
           return;
         }
       } catch (_) {
@@ -288,11 +418,13 @@
         state.lockedUntil = Date.now() + LOCKOUT_MS;
         setState(state);
         lock(state);
+        showReaction(LOCKED_IMAGES);
       }else{
         setState(state);
         status.classList.remove("locked");
         status.classList.add("muted");
         status.textContent = remaining + " " + (remaining === 1 ? "try" : "tries") + " remaining";
+        showReaction(WRONG_IMAGES);
       }
     });
 
