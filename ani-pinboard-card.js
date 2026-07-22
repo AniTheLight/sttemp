@@ -180,9 +180,21 @@ const PinboardCards = (() => {
       .tearoff-row{
         display: flex;
         border-top: 1px dashed rgba(255,249,242,0.55);
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+        background-image: repeating-linear-gradient(
+          to right,
+          transparent 0,
+          transparent 43px,
+          rgba(255,249,242,0.55) 43px,
+          rgba(255,249,242,0.55) 44px
+        );
       }
       .tearoff-tab{
-        flex: 1;
+        flex: 0 0 44px;
+        min-width: 44px;
         height: 64px;
         background: transparent;
         border: none;
@@ -201,6 +213,16 @@ const PinboardCards = (() => {
         writing-mode: vertical-rl;
         letter-spacing: 0.5px;
         font-size: 0.75rem;
+      }
+      .tearoff-row::-webkit-scrollbar{
+        height: 8px;
+      }
+      .tearoff-row::-webkit-scrollbar-thumb{
+        background: rgba(255,249,242,0.45);
+        border-radius: 999px;
+      }
+      .tearoff-row::-webkit-scrollbar-track{
+        background: rgba(0,0,0,0.12);
       }
       .tearoff-reveal-area{
         display: flex;
@@ -229,6 +251,17 @@ const PinboardCards = (() => {
         font-size: 1rem;
         line-height: 1;
         color: rgba(44,44,42,0.55);
+      }
+      .tearoff-note.image-only .tearoff-close{
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: gray;
+        color: #fff9f2;
+        backdrop-filter: blur(2px);
+        z-index: 1;
       }
       .tearoff-note .tearoff-from{
         margin: 0 0 4px;

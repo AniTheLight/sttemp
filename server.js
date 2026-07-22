@@ -20,6 +20,7 @@ const PEOPLE_ROOTS = {
   boys: path.join(WRITTEN_GLAZE_ROOT, "boys"),
   girlies: path.join(WRITTEN_GLAZE_ROOT, "girlies")
 };
+const GENERAL_GLAZE_PATH = path.join(WRITTEN_GLAZE_ROOT, "general");
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -112,6 +113,14 @@ function sanitizePersonName(person) {
     .replace(/^-+|-+$/g, "");
 }
 
+function sanitizeSenderName(sender) {
+  return String(sender || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function resolveGroup(groupValue) {
   const key = String(groupValue || "").trim().toLowerCase();
   if (key === "boys" || key === "girlies") return key;
@@ -129,6 +138,10 @@ function getPersonPathIfExists(groupKey, person) {
 }
 
 function resolvePersonSubmissionPath(person) {
+  if (person === "general") {
+    return { group: "general", personPath: GENERAL_GLAZE_PATH };
+  }
+
   const boyPath = getPersonPathIfExists("boys", person);
   const girlyPath = getPersonPathIfExists("girlies", person);
 
@@ -152,17 +165,27 @@ function ensureDirectory(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
 
-function getNextSubmissionIndex(personPath) {
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getNextSubmissionIndex(personPath, senderSlug) {
   if (!fs.existsSync(personPath)) return 1;
+
+  const pattern = new RegExp(`^${escapeRegExp(senderSlug)}-(\\d+)\\.(png|svg)$`, "i");
+  const barePattern = new RegExp(`^${escapeRegExp(senderSlug)}\\.(png|svg)$`, "i");
 
   const entries = fs.readdirSync(personPath, { withFileTypes: true })
     .filter((entry) => entry.isFile())
     .map((entry) => entry.name)
-    .filter((name) => /\.(png|svg)$/i.test(name));
+    .map((name) => {
+      if (barePattern.test(name)) return 1;
+      const match = name.match(pattern);
+      return match ? Number(match[1]) : null;
+    })
+    .filter((value) => Number.isFinite(value));
 
-  const maxIndex = entries.reduce((acc, name) => {
-    const value = parseNumericPrefix(name);
-    if (!Number.isFinite(value)) return acc;
+  const maxIndex = entries.reduce((acc, value) => {
     return Math.max(acc, value);
   }, 0);
 
@@ -227,6 +250,31 @@ function parseNumericPrefix(fileName) {
   const base = path.parse(fileName).name;
   const match = base.match(/^\d+/);
   return match ? Number(match[0]) : Number.POSITIVE_INFINITY;
+}
+
+function parseSubmissionAssetName(fileName) {
+  const base = path.parse(fileName).name;
+  const namedMatch = base.match(/^(.+)-(\d+)$/);
+  if (namedMatch) {
+    const sender = namedMatch[1].replace(/[-_]+/g, " ").trim();
+    return {
+      from: sender,
+      index: Number(namedMatch[2])
+    };
+  }
+
+  if (/^[a-z0-9_-]+$/i.test(base)) {
+    return {
+      from: base.replace(/[-_]+/g, " ").trim(),
+      index: 1
+    };
+  }
+
+  const legacyIndex = parseNumericPrefix(fileName);
+  return {
+    from: "",
+    index: Number.isFinite(legacyIndex) ? legacyIndex : null
+  };
 }
 
 function compareSubmissionFiles(a, b) {
@@ -381,9 +429,12 @@ function getSubmissionPeople(groupKey) {
     const assets = files.map((fileName) => {
       const absolutePath = path.join(personPath, fileName);
       const relativePath = path.relative(ROOT, absolutePath).split(path.sep).join("/");
+      const assetMeta = parseSubmissionAssetName(fileName);
       return {
         backgroundSrc: `/${relativePath}`,
-        aspectRatio: getAspectRatio(absolutePath)
+        aspectRatio: getAspectRatio(absolutePath),
+        from: assetMeta.from,
+        index: assetMeta.index
       };
     });
 
@@ -522,6 +573,12 @@ const server = http.createServer((req, res) => {
 
         const created = { person, group, messageSaved: false, imageSaved: null };
         const from = String(parsed.from || "").trim();
+        const senderSlug = sanitizeSenderName(from);
+
+        if (!senderSlug) {
+          sendJson(res, 400, { error: "A valid sender name is required." });
+          return;
+        }
 
         const message = typeof parsed.message === "string" ? parsed.message.trim() : "";
         if (message) {
@@ -537,8 +594,8 @@ const server = http.createServer((req, res) => {
             return;
           }
 
-          const nextIndex = getNextSubmissionIndex(personPath);
-          const filename = `${nextIndex}.${decoded.ext}`;
+          const nextIndex = getNextSubmissionIndex(personPath, senderSlug);
+          const filename = `${senderSlug}-${nextIndex}.${decoded.ext}`;
           const filePath = path.join(personPath, filename);
           fs.writeFileSync(filePath, decoded.bytes);
 

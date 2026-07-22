@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>General Glaze Wall</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body {
+    background: #ffffff;
+  }
+
+  .general-board-wrap {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: 20px 16px 50px;
+  }
+
+  #my-cards {
+    width: 100%;
+    margin: 0;
+    background-image: url("images/general_bg.png");
+    background-repeat: repeat-y;
+    background-size: 100% auto;
+    padding: 36px 20px;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 700px) {
+    #my-cards {
+      padding: 24px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <header class="banner">
+    <a href="/"><div class="logo">STEM<span>Muslims</span></div></a>
+    <div class="banner-buttons">
+      <a href="submit.html" class="chip-btn primary">Glaze Submissions</a>
+    </div>
+  </header>
+
+  <main class="general-board-wrap">
+    <div id="my-cards"></div>
+  </main>
+
+  <script src="appreciationwall.js"></script>
+  <script>
+    const container = document.getElementById("my-cards");
+
+    function normalizeMessages(raw) {
+      return (Array.isArray(raw) ? raw : [])
+        .map((value) => {
+          if (typeof value === "string") {
+            const text = value.trim();
+            return text ? { text, from: "" } : null;
+          }
+
+          if (value && typeof value === "object") {
+            const text = String(value.text || value.message || "").trim();
+            if (!text) return null;
+            return {
+              text,
+              from: String(value.from || "").trim()
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+    }
+
+    async function loadGeneralWall() {
+      container.textContent = "Loading submissions...";
+
+      try {
+        const response = await fetch("images/written_glaze/general/messages.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const rawMessages = await response.json();
+        const people = [{
+          person: "general",
+          group: "general",
+          assets: [],
+          messages: normalizeMessages(rawMessages)
+        }];
+
+        AppreciationWall.renderWall(container, people, {
+          title: "general glaze wall",
+          subtitle: "all your love notes in one place",
+          columns: 1,
+          defaultNoteColors: ["#f5f5dc", "#f0d2f6", "#d3f2eb"],
+          personFavoriteColors: {}
+        });
+      } catch (error) {
+        container.innerHTML = "";
+        const fallback = document.createElement("p");
+        fallback.className = "empty-note";
+        fallback.textContent = "Could not load general messages.";
+        container.appendChild(fallback);
+      }
+    }
+
+    loadGeneralWall();
+  </script>
+</body>
+</html>

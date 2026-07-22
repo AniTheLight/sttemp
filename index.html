@@ -43,10 +43,182 @@
       <img src="images/hall-of-fame.jpg" alt="">
     </section>
 
+    <section class="section section-general">
+      <img src="images/general_bg.png" alt="">
+      <div id="general-cards"></div>
+    </section>
+
+    <section class="section section-donut">
+      <img src="images/donut.png" alt="">
+      <a href="glaze.html"><button class="donut-submit-btn" type="button">View Glaze</button></a>
+    </section>
+
     <section class="section">
       <img src="images/lost-sisters.jpg" alt="">
     </section>
   </div>
 
+  <div id="general-lightbox" class="general-lightbox" aria-hidden="true">
+    <div class="general-lightbox-backdrop" data-close="1"></div>
+    <article class="general-lightbox-card" role="dialog" aria-modal="true" aria-label="General note focus view">
+      <button type="button" class="general-lightbox-close" aria-label="Close focus view" data-close="1">x</button>
+      <p id="general-lightbox-from" class="general-lightbox-from"></p>
+      <p id="general-lightbox-text" class="general-lightbox-text"></p>
+      <img id="general-lightbox-image" class="general-lightbox-image" alt="Focused note image">
+    </article>
+  </div>
+
+  <script src="appreciationwall.js"></script>
+  <script>
+    const generalContainer = document.getElementById("general-cards");
+    const generalLightbox = document.getElementById("general-lightbox");
+    const generalLightboxFrom = document.getElementById("general-lightbox-from");
+    const generalLightboxText = document.getElementById("general-lightbox-text");
+    const generalLightboxImage = document.getElementById("general-lightbox-image");
+
+    function normalizeGeneralMessages(rawMessages) {
+      return (Array.isArray(rawMessages) ? rawMessages : [])
+        .map((value) => {
+          if (typeof value === "string") {
+            const text = value.trim();
+            return text ? { text, from: "" } : null;
+          }
+
+          if (value && typeof value === "object") {
+            const text = String(value.text || value.message || "").trim();
+            if (!text) return null;
+            return {
+              text,
+              from: String(value.from || "").trim()
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+    }
+
+    function buildGeneralPeopleColumns(messages, columns) {
+      const safeColumns = Math.max(1, Number(columns) || 1);
+      const buckets = Array.from({ length: safeColumns }, () => []);
+
+      messages.forEach((message, index) => {
+        buckets[index % safeColumns].push(message);
+      });
+
+      return buckets.map((bucket, index) => ({
+        person: `general-${index + 1}`,
+        group: "general",
+        assets: [],
+        messages: bucket
+      }));
+    }
+
+    async function renderGeneralSection() {
+      if (!generalContainer) return;
+      generalContainer.textContent = "Loading submissions...";
+
+      try {
+        const response = await fetch("images/written_glaze/general/messages.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const rawMessages = await response.json();
+        const normalizedMessages = normalizeGeneralMessages(rawMessages);
+        const preferredColumns = normalizedMessages.length > 10
+          ? 3
+          : normalizedMessages.length > 4
+            ? 2
+            : 1;
+        const people = buildGeneralPeopleColumns(normalizedMessages, preferredColumns);
+
+        AppreciationWall.renderWall(generalContainer, people, {
+          title: "",
+          subtitle: "",
+          columns: preferredColumns,
+          defaultNoteColors: ["#f5f5dc", "#f0d2f6", "#d3f2eb"],
+          personFavoriteColors: {}
+        });
+        enableGeneralFocusView();
+      } catch (_) {
+        generalContainer.innerHTML = "";
+        const fallback = document.createElement("p");
+        fallback.className = "empty-note";
+        fallback.textContent = "Could not load general messages.";
+        generalContainer.appendChild(fallback);
+      }
+    }
+
+    function openGeneralFocus(payload) {
+      if (!generalLightbox) return;
+
+      const fromText = payload && payload.from ? String(payload.from).trim() : "";
+      const messageText = payload && payload.text ? String(payload.text).trim() : "";
+      const imageSrc = payload && payload.imageSrc ? String(payload.imageSrc).trim() : "";
+
+      generalLightboxFrom.textContent = fromText ? `from ${fromText}` : "";
+      generalLightboxFrom.style.display = fromText ? "block" : "none";
+
+      generalLightboxText.textContent = messageText;
+      generalLightboxText.style.display = messageText ? "block" : "none";
+
+      if (imageSrc) {
+        generalLightboxImage.src = imageSrc;
+        generalLightboxImage.style.display = "block";
+      } else {
+        generalLightboxImage.removeAttribute("src");
+        generalLightboxImage.style.display = "none";
+      }
+
+      generalLightbox.classList.add("open");
+      generalLightbox.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeGeneralFocus() {
+      if (!generalLightbox) return;
+      generalLightbox.classList.remove("open");
+      generalLightbox.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    function enableGeneralFocusView() {
+      if (!generalContainer || !generalLightbox) return;
+
+      generalContainer.querySelectorAll(".aw-note-wrap").forEach((wrap) => {
+        wrap.style.cursor = "pointer";
+        wrap.addEventListener("click", () => {
+          const assetImage = wrap.querySelector(".aw-asset-frame img");
+          if (assetImage) {
+            openGeneralFocus({ imageSrc: assetImage.src });
+            return;
+          }
+
+          const textNode = wrap.querySelector(".aw-note > div:not(.aw-fold):not(.aw-tape)");
+          const fromNode = wrap.querySelector(".aw-note-from");
+          openGeneralFocus({
+            text: textNode ? textNode.textContent : "",
+            from: fromNode ? fromNode.textContent.replace(/^\s*[—-]\s*/, "") : ""
+          });
+        });
+      });
+    }
+
+    if (generalLightbox) {
+      generalLightbox.addEventListener("click", (event) => {
+        const target = event.target;
+        if (target && target.closest("[data-close='1']")) {
+          closeGeneralFocus();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && generalLightbox.classList.contains("open")) {
+          closeGeneralFocus();
+        }
+      });
+    }
+
+    renderGeneralSection();
+  </script>
 </body>
 </html>

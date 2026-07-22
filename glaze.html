@@ -180,8 +180,9 @@
       const normalizedImageEntries = assets
         .map((asset, index) => {
           if (!asset || !asset.backgroundSrc) return null;
+          const sender = String(asset.from || "").trim();
           return {
-            from: `image ${index + 1}`,
+            from: sender || `image ${index + 1}`,
             text: "",
             imageSrc: String(asset.backgroundSrc)
           };

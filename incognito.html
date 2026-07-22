@@ -82,6 +82,23 @@
     transition:opacity 0.2s ease, transform 0.15s ease;
   }
 
+  .pill-input.btn {
+    display: block;
+    background:var(--pill-text);
+    color:var(--pill);
+    width: 50%;
+    height: 60px;
+    margin: 20px auto;
+    justify-self: center;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    padding: 0 auto;
+  }
+
+  .pill-input.btn:hover {
+    background: var(--neon);
+    color: var(--black);
+  }
+
   .pill-input::placeholder{
     color:var(--pill-text);
     opacity:0.75;
@@ -137,6 +154,7 @@
         placeholder="Enter password"
         aria-label="Enter password"
       >
+      <button type="submit" class="pill-input btn">Submit</button>
     </form>
     <div id="status-msg" class="status-msg muted">3 tries remaining</div>
   </div>

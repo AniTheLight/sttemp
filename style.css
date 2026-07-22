@@ -203,6 +203,171 @@ a {
   pointer-events:none;
 }
 
+.section-general{
+  line-height: normal;
+}
+
+#general-cards{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(140px, 15vw, 210px) clamp(12px, 2.5vw, 24px) clamp(16px, 2.5vw, 28px);
+  display: flex;
+  align-items: stretch;
+}
+
+#general-cards .aw-board{
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.8rem 0.75rem 1rem;
+}
+
+#general-cards .aw-column{
+  gap: 10px;
+}
+
+#general-cards .aw-name{
+  display: none;
+}
+
+#general-cards .aw-heading{
+  display: none;
+}
+
+#general-cards .aw-note-wrap{
+  width: min(280px, 95%);
+}
+
+#general-cards .aw-note{
+  min-height: 58px;
+  padding: 10px 10px 12px;
+  font-size: 0.82rem;
+  line-height: 1.28;
+}
+
+#general-cards .aw-note-from{
+  font-size: 0.66rem;
+  margin-top: 6px;
+}
+
+#general-cards .aw-asset-frame img{
+  max-height: 140px;
+  object-fit: contain;
+}
+
+.general-lightbox{
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: none;
+}
+
+.general-lightbox.open{
+  display: block;
+}
+
+.general-lightbox-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 10, 8, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.general-lightbox-card{
+  position: relative;
+  width: min(640px, calc(100% - 24px));
+  max-height: calc(100vh - 36px);
+  margin: 18px auto;
+  overflow: auto;
+  border-radius: 10px;
+  padding: 16px 18px 18px;
+  background: #f6f1df;
+  color: #24211a;
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.35);
+}
+
+.general-lightbox-close{
+  position: sticky;
+  top: 0;
+  float: right;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.9);
+  color: #fff;
+  font: 700 1rem/1 'Space Grotesk', sans-serif;
+  cursor: pointer;
+}
+
+.general-lightbox-from{
+  margin: 0 0 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(36, 33, 26, 0.72);
+}
+
+.general-lightbox-text{
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.45;
+  font-size: 1rem;
+}
+
+.general-lightbox-image{
+  display: none;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.section-donut{
+  position: relative;
+}
+
+.donut-submit-btn{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 220px;
+  height: 86px;
+  z-index: 3;
+  border: 0;
+  border-radius: 999px;
+  background: #76bf71;
+  color: var(--white);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(1.1rem, 2.8vw, 1.6rem);
+  letter-spacing: 0.02em;
+  padding: 0.9rem 2rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.donut-submit-btn:hover{
+  filter: brightness(1.05);
+}
+
+@media (max-width: 640px){
+  .donut-submit-btn{
+    min-width: 180px;
+    height: 74px;
+    font-size: clamp(1rem, 5vw, 1.25rem);
+    padding: 0.75rem 1.4rem;
+  }
+}
+
 /* ---------- SECTION 01: text + photo ---------- */
 .section-01{
   display:grid;
@@ -343,13 +508,13 @@ a {
 
 
 #my-cards{
-  width: min(1100px, 100%);
+  width: 100%;
   margin: 0 auto;
   display: grid;
   gap: 28px;
   background-image: url("images/written_glaze/girlies/glaze_bg.png");
   background-repeat: repeat-y;
-  padding: 40px 24px;
+  padding: 40px 40px;
 }
 .person-block{
   display: grid;

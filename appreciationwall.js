@@ -108,7 +108,7 @@ const AppreciationWall = (() => {
     style.textContent = `
       .aw-board{
         --aw-cols: 3;
-        background: #1c1c1a;
+        background: transparent;
         border-radius: 16px;
         padding: 2rem 1.5rem;
         display: grid;
