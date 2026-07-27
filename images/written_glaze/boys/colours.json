@@ -1,19 +1,19 @@
 {
     "defaultColors": ["#F5F5DC", "#D2B48C", "#8B4513"],
     "people": {
-        "adam": ["#676E45", "#FBE7C6", "#D7E9FF"],
-        "adham": ["#EAD7FF", "#676767", "#FFD3B6"],
-        "afif": ["#F5F5DC", "#D2B48C", "#8B4513"],
-        "asad": ["#E8DFF5", "#D9F2E6", "#FFE5B4"],
-        "ayan": ["#FFE8E8", "#DFF6FF", "#FFF3CD"],
-        "aydin": ["#FADADD", "#E2F0CB", "#CDE7FF"],
-        "dai": ["#FEE1E8", "#E8F9E9", "#FFF4C2"],
-        "rayan": ["#FFE3EC", "#DCEBFF", "#F6EAC2"],
-        "ruhan": ["#F3E8FF", "#D7F5E8", "#FFE4C4"],
-        "shad": ["#FDE2E4", "#E2ECE9", "#FFF1B6"],
-        "uthman": ["#F8EDEB", "#DDF4E7", "#E4E8FF"],
-        "yusuf": ["#2020E6", "#F28416", "#E7D8FF"],
-        "zakariah": ["#FFE5EC", "#D8F3FF", "#FFF0C9"],
-        "ziyad": ["#F7D9C4", "#D9EDBF", "#D6E5FA"]
+        "adam": ["#ffffff", "#075130", "#ffffff"],
+        "adham": ["#535b43", "#020c47", "#ffffff"],
+        "afif": ["#499652", "#39592a", "#999f63"],
+        "asad": ["#1620a6", "#0f7529", "#FFE5B4"],
+        "ayan": ["#6c9390", "#aa8e3a", "#ffffff"],
+        "aydin": ["#81001e", "#ada282", "#000000"],
+        "dai": ["#aa4179", "#58b8c6", "#FFF4C2"],
+        "rayan": ["#008081", "#dc2122", "#F6EAC2"],
+        "ruhan": ["#010281", "#990201", "#4f8ccf"],
+        "shad": ["#08fc83", "#fc9715", "#008081"],
+        "uthman": ["#f9b803", "#013253", "#003002"],
+        "yusuf": [ "#ff6b01", "#010281", "#E7D8FF"],
+        "zakariyah": ["#05291b", "#3f0011", "#010535"],
+        "ziyad": ["#4f8ccf", "#010282", "#c1c1c1"]
     }
 }
