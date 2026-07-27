@@ -409,22 +409,30 @@ function getPersonMessages(personPath) {
 
 function getSubmissionPeople(groupKey) {
   const groupRoot = PEOPLE_ROOTS[groupKey];
-  if (!groupRoot || !fs.existsSync(groupRoot)) {
+  if (!groupRoot) {
     return [];
   }
 
-  const personDirs = fs.readdirSync(groupRoot, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name)
+  const configuredPeople = Object.keys(getGroupColors(groupKey).people || {});
+
+  const personDirs = fs.existsSync(groupRoot)
+    ? fs.readdirSync(groupRoot, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name)
+    : [];
+
+  const personNames = Array.from(new Set([...personDirs, ...configuredPeople]))
     .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 
-  return personDirs.map((person) => {
+  return personNames.map((person) => {
     const personPath = path.join(groupRoot, person);
-    const files = fs.readdirSync(personPath, { withFileTypes: true })
-      .filter((dirent) => dirent.isFile())
-      .map((dirent) => dirent.name)
-      .filter((name) => /\.(png|svg)$/i.test(name))
-      .sort(compareSubmissionFiles);
+    const files = fs.existsSync(personPath)
+      ? fs.readdirSync(personPath, { withFileTypes: true })
+        .filter((dirent) => dirent.isFile())
+        .map((dirent) => dirent.name)
+        .filter((name) => /\.(png|svg)$/i.test(name))
+        .sort(compareSubmissionFiles)
+      : [];
 
     const assets = files.map((fileName) => {
       const absolutePath = path.join(personPath, fileName);
@@ -442,7 +450,7 @@ function getSubmissionPeople(groupKey) {
       person,
       group: groupKey,
       assets,
-      messages: getPersonMessages(personPath)
+      messages: fs.existsSync(personPath) ? getPersonMessages(personPath) : []
     };
   });
 }
