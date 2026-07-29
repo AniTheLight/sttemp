@@ -51,17 +51,17 @@
     justify-content: space-between;
     padding: 0 32px;
     margin: 0 -24px;
-    background: var(--navbar-purple);
+    background: #676767;
     border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .banner .logo{
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.01em;
-    color: #2c2c2a;
+    font-family:'Poppins',sans-serif;
+    font-size:1.1rem;
+    letter-spacing:0.01em;
+    color:var(--bone);
   }
-  .banner .logo span{ color: var(--purple); }
-  .banner-buttons{ display: flex; gap: 12px; }
+  .banner .logo span{ color:var(--neon); }
+  .banner-buttons{ display: flex; gap: 12px;}
 
   .chip-btn{
     font-family: 'Space Grotesk', sans-serif;
@@ -78,8 +78,8 @@
     align-items: center;
     justify-content: center;
   }
-  .chip-btn.primary{ background: var(--purple); color: var(--white); }
-  .chip-btn.primary:hover{ background: #7c4fe0; }
+  .chip-btn.primary{ background: var(--neon); color: var(--white); }
+  .chip-btn.primary:hover{ background: var(--black); }
   .chip-btn.ghost{ background: transparent; color: #2c2c2a; border-color: rgba(44,44,42,0.35); }
   .chip-btn.ghost:hover{ border-color: var(--purple); color: var(--purple); }
 
@@ -117,6 +117,48 @@
     max-width: 100%;
     height: auto;
     margin: 0 auto;
+  }
+
+  @media (max-width: 640px){
+    .section.comm img {
+      width: clamp(140px, 46vw, 220px);
+    }
+  }
+
+  @media (max-width: 430px){
+    .banner{
+      padding: 0 8px;
+    }
+
+    .banner .logo{
+      font-size: 0.94rem;
+    }
+
+    .banner-buttons{
+      gap: 6px;
+    }
+
+    .chip-btn{
+      padding: 5px 8px;
+      font-size: 0.58rem;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .section.comm img {
+      width: clamp(120px, 42vw, 165px);
+    }
+  }
+
+  @media (max-width: 390px){
+    .chip-btn{
+      padding: 5px 7px;
+      font-size: 0.54rem;
+    }
+
+    .section.comm img {
+      width: clamp(108px, 38vw, 148px);
+    }
   }
 </style>
 </head>

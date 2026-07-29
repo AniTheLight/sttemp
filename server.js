@@ -6,7 +6,7 @@ const { URL } = require("url");
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const ROOT = process.cwd();
-const INCOGNITO_PASSWORD = process.env.INCOGNITO_PASSWORD || "changeme";
+const INCOGNITO_PASSWORD = process.env.INCOGNITO_PASSWORD || "RISK-YA-BASS-JAM-SZN";
 const INCOGNITO_COOKIE_NAME = "incognito_auth";
 const INCOGNITO_COOKIE_VALUE = crypto.randomBytes(24).toString("hex");
 const INCOGNITO_COOKIE_MAX_AGE_SECONDS = 8 * 60 * 60;
