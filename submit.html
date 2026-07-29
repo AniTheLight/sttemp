@@ -52,6 +52,42 @@
     font:inherit;
     padding:10px 12px;
   }
+  .name-picker{
+    position:relative;
+  }
+  .name-suggestions{
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 6px);
+    margin:0;
+    padding:6px;
+    list-style:none;
+    background:#171717;
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:12px;
+    max-height:220px;
+    overflow-y:auto;
+    box-shadow:0 14px 32px rgba(0,0,0,0.45);
+    z-index:20;
+  }
+  .name-suggestions[hidden]{
+    display:none;
+  }
+  .name-suggestions li{
+    padding:8px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .name-suggestions li:hover,
+  .name-suggestions li.active{
+    background:rgba(184,255,116,0.18);
+  }
+  .name-empty{
+    opacity:0.8;
+    cursor:default;
+  }
   textarea{ min-height:100px; resize:vertical; }
   input[type="file"]{ padding:8px; }
   .actions{
@@ -93,7 +129,10 @@
     <form id="submission-form">
       <div class="field">
         <label for="person">To:</label>
-        <input id="person" name="person" type="text" placeholder="e.g. anica" required>
+        <div class="name-picker">
+          <input id="person" name="person" type="text" placeholder="Start typing a name..." autocomplete="off" required>
+          <ul id="person-suggestions" class="name-suggestions" hidden></ul>
+        </div>
       </div>
 
       <div class="field">
@@ -123,6 +162,150 @@
   <script>
     const form = document.getElementById('submission-form');
     const statusNode = document.getElementById('status');
+    const personInput = document.getElementById('person');
+    const suggestionsNode = document.getElementById('person-suggestions');
+    const fallbackPeople = [
+      'general',
+      'adam',
+      'adham',
+      'afif',
+      'aiza',
+      'aliyah',
+      'anica',
+      'asad',
+      'ayan',
+      'aydin',
+      'bilgesu',
+      'dai',
+      'ishmal',
+      'javeria',
+      'khadeja',
+      'nour',
+      'rameen',
+      'rayan',
+      'ruhan',
+      'safaa',
+      'salma',
+      'shad',
+      'suweda',
+      'uthman',
+      'yusra',
+      'yusuf',
+      'zainab',
+      'zakariyah',
+      'ziyad'
+    ];
+    let allPeople = [];
+    let filteredPeople = [];
+    let activeIndex = -1;
+
+    function normalizePeopleList(names) {
+      return Array.from(new Set((Array.isArray(names) ? names : [])
+        .map((name) => String(name || '').trim().toLowerCase())
+        .filter(Boolean)
+      )).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    }
+
+    function closeSuggestions() {
+      suggestionsNode.hidden = true;
+      suggestionsNode.innerHTML = '';
+      activeIndex = -1;
+    }
+
+    function renderSuggestions() {
+      suggestionsNode.innerHTML = '';
+
+      if (!filteredPeople.length) {
+        const empty = document.createElement('li');
+        empty.className = 'name-empty';
+        empty.textContent = 'No matches';
+        suggestionsNode.appendChild(empty);
+        suggestionsNode.hidden = false;
+        return;
+      }
+
+      filteredPeople.forEach((name, index) => {
+        const item = document.createElement('li');
+        item.textContent = name;
+        if (index === activeIndex) item.classList.add('active');
+        item.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+          personInput.value = name;
+          closeSuggestions();
+        });
+        suggestionsNode.appendChild(item);
+      });
+
+      suggestionsNode.hidden = false;
+    }
+
+    function updateSuggestions() {
+      const query = personInput.value.trim().toLowerCase();
+      filteredPeople = allPeople.filter((name) => name.includes(query)).slice(0, 50);
+      activeIndex = filteredPeople.length ? 0 : -1;
+      renderSuggestions();
+    }
+
+    function buildPeopleOptions(names) {
+      allPeople = normalizePeopleList(names);
+    }
+
+    async function loadPeopleOptions() {
+      buildPeopleOptions(fallbackPeople);
+      try {
+        const response = await fetch('/api/glaze-people', { cache: 'no-store' });
+        if (!response.ok) return;
+        const payload = await response.json();
+        buildPeopleOptions([...(payload.people || []), ...fallbackPeople]);
+      } catch (_) {
+        // Keep fallback options if roster request fails.
+      }
+    }
+
+    personInput.addEventListener('input', () => {
+      updateSuggestions();
+    });
+
+    personInput.addEventListener('focus', () => {
+      updateSuggestions();
+    });
+
+    personInput.addEventListener('keydown', (event) => {
+      if (suggestionsNode.hidden) return;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (!filteredPeople.length) return;
+        activeIndex = (activeIndex + 1) % filteredPeople.length;
+        renderSuggestions();
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (!filteredPeople.length) return;
+        activeIndex = (activeIndex - 1 + filteredPeople.length) % filteredPeople.length;
+        renderSuggestions();
+        return;
+      }
+
+      if (event.key === 'Enter' && activeIndex >= 0 && filteredPeople[activeIndex]) {
+        event.preventDefault();
+        personInput.value = filteredPeople[activeIndex];
+        closeSuggestions();
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        closeSuggestions();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.name-picker')) {
+        closeSuggestions();
+      }
+    });
 
     function setStatus(message, kind) {
       statusNode.textContent = message;
@@ -192,6 +375,8 @@
         setStatus(error.message || 'Submission failed.', 'err');
       }
     });
+
+    loadPeopleOptions();
   </script>
 </body>
 </html>

@@ -490,6 +490,17 @@ function getGroupColors(groupKey) {
   }
 }
 
+function getAllSubmissionNames() {
+  const boys = getSubmissionPeople("boys").map((entry) => entry.person);
+  const girlies = getSubmissionPeople("girlies").map((entry) => entry.person);
+  const merged = Array.from(new Set(["general", ...boys, ...girlies]))
+    .map((name) => String(name || "").trim().toLowerCase())
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+  return merged;
+}
+
 function resolveStaticPath(urlPath) {
   const normalized = path.normalize(decodeURIComponent(urlPath)).replace(/^[/\\]+/, "");
   const absolutePath = path.resolve(ROOT, normalized);
@@ -665,6 +676,21 @@ const server = http.createServer((req, res) => {
     } catch (error) {
       return sendJson(res, 500, {
         error: "Failed to load colors config.",
+        detail: error.message
+      });
+    }
+  }
+
+  if (reqUrl.pathname === "/api/glaze-people") {
+    try {
+      const people = getAllSubmissionNames();
+      return sendJson(res, 200, {
+        generatedAt: new Date().toISOString(),
+        people
+      });
+    } catch (error) {
+      return sendJson(res, 500, {
+        error: "Failed to load people names.",
         detail: error.message
       });
     }
