@@ -137,13 +137,43 @@ function getPersonPathIfExists(groupKey, person) {
   return null;
 }
 
+function getConfiguredPeople(groupKey) {
+  const colors = getGroupColors(groupKey);
+  return new Set(Object.keys(colors.people || {}));
+}
+
 function resolvePersonSubmissionPath(person) {
   if (person === "general") {
     return { group: "general", personPath: GENERAL_GLAZE_PATH };
   }
 
+  const configuredBoys = getConfiguredPeople("boys");
+  const configuredGirlies = getConfiguredPeople("girlies");
   const boyPath = getPersonPathIfExists("boys", person);
   const girlyPath = getPersonPathIfExists("girlies", person);
+
+  const isConfiguredBoy = configuredBoys.has(person);
+  const isConfiguredGirly = configuredGirlies.has(person);
+
+  if (isConfiguredBoy && isConfiguredGirly) {
+    return {
+      error: `Name '${person}' exists in both boys and girlies. Use a unique person folder name.`
+    };
+  }
+
+  if (isConfiguredBoy) {
+    return {
+      group: "boys",
+      personPath: path.join(PEOPLE_ROOTS.boys, person)
+    };
+  }
+
+  if (isConfiguredGirly) {
+    return {
+      group: "girlies",
+      personPath: path.join(PEOPLE_ROOTS.girlies, person)
+    };
+  }
 
   if (boyPath && girlyPath) {
     return {
